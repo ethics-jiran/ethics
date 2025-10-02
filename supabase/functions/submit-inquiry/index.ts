@@ -1,26 +1,54 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { createDecipheriv } from 'node:crypto';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// AES-GCM decryption
+// Helper: Convert hex string to Uint8Array
+function hexToBytes(hex: string): Uint8Array {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+  }
+  return bytes;
+}
+
+// Helper: Convert base64 to Uint8Array
+function base64ToBytes(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+// AES-GCM decryption using Web Crypto API
 async function decryptAES(encryptedBase64: string, keyHex: string, ivBase64: string): Promise<string> {
-  const key = Buffer.from(keyHex, 'hex');
-  const iv = Buffer.from(ivBase64, 'base64');
-  const encrypted = Buffer.from(encryptedBase64, 'base64');
+  const keyBytes = hexToBytes(keyHex);
+  const iv = base64ToBytes(ivBase64);
+  const encrypted = base64ToBytes(encryptedBase64);
 
-  // GCM mode: last 16 bytes are the auth tag
-  const authTag = encrypted.subarray(-16);
-  const ciphertext = encrypted.subarray(0, -16);
+  // Import key
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyBytes,
+    { name: 'AES-GCM' },
+    false,
+    ['decrypt']
+  );
 
-  const decipher = createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(authTag);
+  // Decrypt
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encrypted
+  );
 
-  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  return decrypted.toString('utf8');
+  // Convert to string
+  const decoder = new TextDecoder();
+  return decoder.decode(decrypted);
 }
 
 // Generate 6-character alphanumeric auth code

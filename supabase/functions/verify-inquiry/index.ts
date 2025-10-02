@@ -1,45 +1,93 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { createCipheriv, createDecipheriv } from 'node:crypto';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// AES-GCM decryption
-async function decryptAES(encryptedBase64: string, keyHex: string, ivBase64: string): Promise<string> {
-  const key = Buffer.from(keyHex, 'hex');
-  const iv = Buffer.from(ivBase64, 'base64');
-  const encrypted = Buffer.from(encryptedBase64, 'base64');
-
-  // GCM mode: last 16 bytes are the auth tag
-  const authTag = encrypted.subarray(-16);
-  const ciphertext = encrypted.subarray(0, -16);
-
-  const decipher = createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(authTag);
-
-  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  return decrypted.toString('utf8');
+// Helper: Convert hex string to Uint8Array
+function hexToBytes(hex: string): Uint8Array {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+  }
+  return bytes;
 }
 
-// AES-GCM encryption
+// Helper: Convert base64 to Uint8Array
+function base64ToBytes(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+// Helper: Convert Uint8Array to base64
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+// AES-GCM decryption using Web Crypto API
+async function decryptAES(encryptedBase64: string, keyHex: string, ivBase64: string): Promise<string> {
+  const keyBytes = hexToBytes(keyHex);
+  const iv = base64ToBytes(ivBase64);
+  const encrypted = base64ToBytes(encryptedBase64);
+
+  // Import key
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyBytes,
+    { name: 'AES-GCM' },
+    false,
+    ['decrypt']
+  );
+
+  // Decrypt
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encrypted
+  );
+
+  // Convert to string
+  const decoder = new TextDecoder();
+  return decoder.decode(decrypted);
+}
+
+// AES-GCM encryption using Web Crypto API
 async function encryptAES(plaintext: string, keyHex: string): Promise<{ iv: string; encrypted: string }> {
-  const key = Buffer.from(keyHex, 'hex');
+  const keyBytes = hexToBytes(keyHex);
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
-  const cipher = createCipheriv('aes-256-gcm', key, iv);
-  const encrypted = Buffer.concat([
-    cipher.update(plaintext, 'utf8'),
-    cipher.final(),
-  ]);
+  // Import key
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyBytes,
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt']
+  );
 
-  const authTag = cipher.getAuthTag();
-  const result = Buffer.concat([encrypted, authTag]);
+  // Encode plaintext
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plaintext);
+
+  // Encrypt
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    data
+  );
 
   return {
-    iv: Buffer.from(iv).toString('base64'),
-    encrypted: result.toString('base64'),
+    iv: bytesToBase64(iv),
+    encrypted: bytesToBase64(new Uint8Array(encrypted)),
   };
 }
 
