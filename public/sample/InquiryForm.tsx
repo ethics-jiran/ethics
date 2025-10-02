@@ -2,7 +2,7 @@ import React, { useState, useEffect, FormEvent } from 'react';
 
 // CSS는 위젯 설정에서 별도로 추가하세요
 // inquiry-encrypt 라이브러리는 전역 스크립트에서 로드해야 합니다
-// <script src="https://cherish-jiran.vercel.app/api/inquiry-encrypt"></script>
+// <script src="https://cherish-jiran.vercel.app/inquiry-encrypt.js"></script>
 declare global {
   interface Window {
     InquiryEncryptor: any;
