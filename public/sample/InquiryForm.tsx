@@ -34,8 +34,11 @@ export default function InquiryForm() {
 
   // 스크립트 로딩 대기
   useEffect(() => {
+    console.log('[InquiryForm] 스크립트 로딩 체크 시작');
+
     const checkScript = () => {
       if (window.InquiryEncryptor) {
+        console.log('[InquiryForm] ✅ InquiryEncryptor 로드 완료!', window.InquiryEncryptor);
         setReady(true);
         return true;
       }
@@ -45,8 +48,11 @@ export default function InquiryForm() {
     // 이미 로드되었는지 확인
     if (checkScript()) return;
 
+    console.log('[InquiryForm] InquiryEncryptor 대기 중...');
+
     // 100ms마다 확인 (최대 5초)
     const interval = setInterval(() => {
+      console.log('[InquiryForm] 폴링 중... window.InquiryEncryptor:', window.InquiryEncryptor);
       if (checkScript()) {
         clearInterval(interval);
       }
@@ -55,6 +61,7 @@ export default function InquiryForm() {
     const timeout = setTimeout(() => {
       clearInterval(interval);
       if (!window.InquiryEncryptor) {
+        console.error('[InquiryForm] ❌ 암호화 라이브러리 로딩 타임아웃');
         setErrorMessage('암호화 라이브러리 로딩에 실패했습니다.');
       }
     }, 5000);
