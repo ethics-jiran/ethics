@@ -1,0 +1,28 @@
+# Development files
+.env.local
+.env*.local
+
+# IDE
+.vscode
+.idea
+.DS_Store
+
+# Documentation
+README.md
+CLAUDE.md
+specs
+
+# Supabase (local development only)
+supabase
+
+# Sample files for external use (not needed in deployment)
+sample-for-gachi
+
+# MCP and project configs
+.mcp.json
+.specify
+.claude
+
+# Git
+.git
+.gitignore
