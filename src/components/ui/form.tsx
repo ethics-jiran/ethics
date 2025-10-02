@@ -1,13 +1,13 @@
 import * as React from "react";
-import { Controller, FormProvider, useFormContext } from "react-hook-form";
+import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider, useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 
 const Form = FormProvider;
 
 type FormFieldContextValue<
-  TFieldValues extends Record<string, any> = Record<string, any>,
-  TName extends keyof TFieldValues = keyof TFieldValues
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
 > = {
   name: TName;
 };
@@ -17,14 +17,11 @@ const FormFieldContext = React.createContext<FormFieldContextValue>(
 );
 
 const FormField = <
-  TFieldValues extends Record<string, any> = Record<string, any>,
-  TName extends keyof TFieldValues = keyof TFieldValues
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
 >({
   ...props
-}: {
-  name: TName;
-  render: (field: { field: any }) => React.ReactNode;
-}) => {
+}: ControllerProps<TFieldValues, TName>) => {
   return (
     <FormFieldContext.Provider value={{ name: props.name }}>
       <Controller {...props} />

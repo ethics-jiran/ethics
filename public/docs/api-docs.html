@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,15 +14,29 @@
       padding: 20px;
       color: #333;
     }
-    h1 { color: #2563eb; border-bottom: 3px solid #2563eb; padding-bottom: 10px; }
-    h2 { color: #1e40af; margin-top: 40px; }
-    h3 { color: #3b82f6; }
+
+    h1 {
+      color: #2563eb;
+      border-bottom: 3px solid #2563eb;
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      color: #1e40af;
+      margin-top: 40px;
+    }
+
+    h3 {
+      color: #3b82f6;
+    }
+
     code {
       background: #f3f4f6;
       padding: 2px 6px;
       border-radius: 3px;
       font-family: 'Monaco', 'Courier New', monospace;
     }
+
     pre {
       background: #1e293b;
       color: #e2e8f0;
@@ -29,11 +44,13 @@
       border-radius: 8px;
       overflow-x: auto;
     }
+
     pre code {
       background: none;
       color: inherit;
       padding: 0;
     }
+
     .endpoint {
       background: #dbeafe;
       padding: 15px;
@@ -41,6 +58,7 @@
       margin: 20px 0;
       border-radius: 4px;
     }
+
     .note {
       background: #fef3c7;
       padding: 15px;
@@ -48,22 +66,27 @@
       margin: 20px 0;
       border-radius: 4px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin: 20px 0;
     }
-    th, td {
+
+    th,
+    td {
       border: 1px solid #e5e7eb;
       padding: 12px;
       text-align: left;
     }
+
     th {
       background: #f3f4f6;
       font-weight: 600;
     }
   </style>
 </head>
+
 <body>
   <h1>🔐 제보 API 연동 가이드</h1>
 
@@ -149,7 +172,7 @@
   <p>제공되는 JavaScript 라이브러리를 사용하면 쉽게 연동할 수 있습니다.</p>
 
   <h3>라이브러리 로드</h3>
-  <pre><code>&lt;script src="https://yoursite.com/inquiry-encrypt.js"&gt;&lt;/script&gt;</code></pre>
+  <pre><code>&lt;script src="https://cherish-jiran.vercel.app/inquiry-encrypt.js"&gt;&lt;/script&gt;</code></pre>
 
   <h3>주요 메서드</h3>
   <table>
@@ -195,7 +218,7 @@ console.log('제보 완료:', result);</code></pre>
 
   <h3>방법 2: 수동 암호화</h3>
   <pre><code>// 1. 공개키 가져오기
-const keyRes = await fetch('https://yoursite.com/api/public-key');
+const keyRes = await fetch('https://cherish-jiran.vercel.app/api/public-key');
 const { publicKey } = await keyRes.json();
 
 // 2. 암호화 함수 (Web Crypto API)
@@ -236,7 +259,7 @@ const encryptedName = await encryptRSA(publicKey, '홍길동');
 const encryptedPhone = await encryptRSA(publicKey, '010-1234-5678');
 
 // 4. API 전송
-const response = await fetch('https://yoursite.com/api/inquiries', {
+const response = await fetch('https://cherish-jiran.vercel.app/api/inquiries', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -273,4 +296,5 @@ console.log('제보 완료:', result);</code></pre>
     © 2025 지란지교패밀리 윤리경영 제보관리센터
   </p>
 </body>
+
 </html>

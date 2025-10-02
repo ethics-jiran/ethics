@@ -1,99 +1,75 @@
 /**
- * Inquiry Encryption Library
+ * Inquiry Encryption Library (AES-GCM)
  * 외부 사이트에서 제보 데이터를 암호화하여 전송하기 위한 라이브러리
  */
 
 class InquiryEncryptor {
-  constructor(apiBaseUrl = 'https://yoursite.com') {
-    this.apiBaseUrl = apiBaseUrl;
-    this.publicKey = null;
+  constructor(supabaseUrl = 'https://domjuxvrnglsohyqdzmi.supabase.co') {
+    this.supabaseUrl = supabaseUrl;
+    this.functionsUrl = `${supabaseUrl}/functions/v1`;
   }
 
   /**
-   * 공개키를 가져와서 초기화
+   * 일회성 AES 키 요청
    */
-  async init() {
-    try {
-      const response = await fetch(`${this.apiBaseUrl}/api/public-key`);
-      const data = await response.json();
-      this.publicKey = data.publicKey;
-      return true;
-    } catch (error) {
-      console.error('Failed to fetch public key:', error);
-      throw new Error('Encryption initialization failed');
+  async getEncryptionKey() {
+    const response = await fetch(`${this.functionsUrl}/aes-key`);
+    if (!response.ok) {
+      throw new Error('Failed to get encryption key');
     }
+    return await response.json();
   }
 
   /**
-   * PEM 형식의 공개키를 CryptoKey 객체로 변환
+   * Hex 문자열을 Uint8Array로 변환
    */
-  async importPublicKey(pem) {
-    const pemHeader = '-----BEGIN PUBLIC KEY-----';
-    const pemFooter = '-----END PUBLIC KEY-----';
-    const pemContents = pem
-      .replace(pemHeader, '')
-      .replace(pemFooter, '')
-      .replace(/\s/g, '');
+  hexToBytes(hex) {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    }
+    return bytes;
+  }
 
-    const binaryDer = this.base64ToArrayBuffer(pemContents);
+  /**
+   * AES-GCM으로 텍스트 암호화
+   */
+  async encryptText(text, keyHex) {
+    // Hex 키를 바이트로 변환
+    const keyBytes = this.hexToBytes(keyHex);
 
-    return await window.crypto.subtle.importKey(
-      'spki',
-      binaryDer,
-      {
-        name: 'RSA-OAEP',
-        hash: 'SHA-256',
-      },
-      true,
+    // 키 가져오기
+    const key = await window.crypto.subtle.importKey(
+      'raw',
+      keyBytes,
+      { name: 'AES-GCM' },
+      false,
       ['encrypt']
     );
-  }
 
-  /**
-   * Base64 문자열을 ArrayBuffer로 변환
-   */
-  base64ToArrayBuffer(base64) {
-    const binaryString = window.atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  }
+    // 랜덤 IV 생성
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
-  /**
-   * ArrayBuffer를 Base64 문자열로 변환
-   */
-  arrayBufferToBase64(buffer) {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-  }
-
-  /**
-   * 텍스트를 RSA 공개키로 암호화
-   */
-  async encryptText(text) {
-    if (!this.publicKey) {
-      throw new Error('Encryptor not initialized. Call init() first.');
-    }
-
-    const cryptoKey = await this.importPublicKey(this.publicKey);
+    // 텍스트 인코딩
     const encoder = new TextEncoder();
     const data = encoder.encode(text);
 
+    // 암호화
     const encrypted = await window.crypto.subtle.encrypt(
-      {
-        name: 'RSA-OAEP',
-      },
-      cryptoKey,
+      { name: 'AES-GCM', iv },
+      key,
       data
     );
 
-    return this.arrayBufferToBase64(encrypted);
+    // Base64 변환
+    const encryptedArray = new Uint8Array(encrypted);
+    const encryptedBase64 = btoa(String.fromCharCode(...encryptedArray));
+    const ivBase64 = btoa(String.fromCharCode(...iv));
+
+    return {
+      iv: ivBase64,
+      encrypted: encryptedBase64,
+    };
   }
 
   /**
@@ -102,20 +78,25 @@ class InquiryEncryptor {
    * @returns {Object} - 암호화된 데이터
    */
   async encrypt(formData) {
-    const encryptedTitle = await this.encryptText(formData.title);
-    const encryptedContent = await this.encryptText(formData.content);
-    const encryptedEmail = await this.encryptText(formData.email);
-    const encryptedName = await this.encryptText(formData.name);
-    const encryptedPhone = formData.phone
-      ? await this.encryptText(formData.phone)
+    // 일회성 키 받기
+    const { keyId, key } = await this.getEncryptionKey();
+
+    // 각 필드 암호화
+    const title = await this.encryptText(formData.title, key);
+    const content = await this.encryptText(formData.content, key);
+    const email = await this.encryptText(formData.email, key);
+    const name = await this.encryptText(formData.name, key);
+    const phone = formData.phone
+      ? await this.encryptText(formData.phone, key)
       : null;
 
     return {
-      encrypted_title: encryptedTitle,
-      encrypted_content: encryptedContent,
-      encrypted_email: encryptedEmail,
-      encrypted_name: encryptedName,
-      encrypted_phone: encryptedPhone,
+      keyId,
+      title,
+      content,
+      email,
+      name,
+      phone,
     };
   }
 
@@ -125,7 +106,7 @@ class InquiryEncryptor {
   async submit(formData) {
     const encrypted = await this.encrypt(formData);
 
-    const response = await fetch(`${this.apiBaseUrl}/api/inquiries`, {
+    const response = await fetch(`${this.functionsUrl}/submit-inquiry`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -140,20 +121,84 @@ class InquiryEncryptor {
 
     return await response.json();
   }
+
+  /**
+   * 제보 조회 (이메일 + 인증 코드)
+   */
+  async verify(email, authCode) {
+    // 일회성 키 받기
+    const { keyId, key } = await this.getEncryptionKey();
+
+    // 이메일과 인증 코드 암호화
+    const encryptedEmail = await this.encryptText(email, key);
+    const encryptedAuthCode = await this.encryptText(authCode.toUpperCase(), key);
+
+    const response = await fetch(`${this.functionsUrl}/verify-inquiry`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        keyId,
+        email: encryptedEmail,
+        authCode: encryptedAuthCode,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Invalid email or verification code');
+    }
+
+    const result = await response.json();
+
+    // 응답 복호화
+    const decryptedInquiry = {
+      id: result.data.id,
+      title: await this.decryptText(result.data.title.encrypted, result.aesKey, result.data.title.iv),
+      content: await this.decryptText(result.data.content.encrypted, result.aesKey, result.data.content.iv),
+      email: await this.decryptText(result.data.email.encrypted, result.aesKey, result.data.email.iv),
+      name: await this.decryptText(result.data.name.encrypted, result.aesKey, result.data.name.iv),
+      phone: result.data.phone ? await this.decryptText(result.data.phone.encrypted, result.aesKey, result.data.phone.iv) : null,
+      status: result.data.status,
+      created_at: result.data.created_at,
+      reply_title: result.data.reply_title ? await this.decryptText(result.data.reply_title.encrypted, result.aesKey, result.data.reply_title.iv) : null,
+      reply_content: result.data.reply_content ? await this.decryptText(result.data.reply_content.encrypted, result.aesKey, result.data.reply_content.iv) : null,
+      replied_at: result.data.replied_at,
+    };
+
+    return decryptedInquiry;
+  }
+
+  /**
+   * AES-GCM으로 텍스트 복호화
+   */
+  async decryptText(encryptedBase64, keyHex, ivBase64) {
+    // Hex 키를 바이트로 변환
+    const keyBytes = this.hexToBytes(keyHex);
+
+    // 키 가져오기
+    const key = await window.crypto.subtle.importKey(
+      'raw',
+      keyBytes,
+      { name: 'AES-GCM' },
+      false,
+      ['decrypt']
+    );
+
+    // Base64 디코딩
+    const iv = Uint8Array.from(atob(ivBase64), c => c.charCodeAt(0));
+    const ciphertext = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+
+    // 복호화
+    const decrypted = await window.crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      ciphertext
+    );
+
+    // 문자열로 변환
+    const decoder = new TextDecoder();
+    return decoder.decode(decrypted);
+  }
 }
-
-// 사용 예제:
-/*
-const encryptor = new InquiryEncryptor('https://yoursite.com');
-await encryptor.init();
-
-const result = await encryptor.submit({
-  title: '제보 제목',
-  content: '제보 내용',
-  name: '제보자 이름',
-  phone: '010-1234-5678',
-  email: 'reporter@example.com'
-});
-
-console.log('제보 완료:', result);
-*/

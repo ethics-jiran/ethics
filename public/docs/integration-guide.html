@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,9 +14,24 @@
       padding: 40px 20px;
       color: #333;
     }
-    h1 { color: #2563eb; margin-bottom: 10px; }
-    h2 { color: #1e40af; margin-top: 40px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
-    h3 { color: #3b82f6; margin-top: 30px; }
+
+    h1 {
+      color: #2563eb;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      color: #1e40af;
+      margin-top: 40px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 10px;
+    }
+
+    h3 {
+      color: #3b82f6;
+      margin-top: 30px;
+    }
+
     code {
       background: #f3f4f6;
       padding: 2px 6px;
@@ -23,6 +39,7 @@
       font-family: 'Monaco', 'Courier New', monospace;
       font-size: 14px;
     }
+
     pre {
       background: #1e293b;
       color: #e2e8f0;
@@ -31,11 +48,13 @@
       overflow-x: auto;
       margin: 15px 0;
     }
+
     pre code {
       background: none;
       color: inherit;
       padding: 0;
     }
+
     .step {
       background: #f0f9ff;
       border-left: 4px solid #2563eb;
@@ -43,6 +62,7 @@
       margin: 20px 0;
       border-radius: 4px;
     }
+
     .step-number {
       background: #2563eb;
       color: white;
@@ -55,6 +75,7 @@
       font-weight: bold;
       margin-right: 10px;
     }
+
     .note {
       background: #fef3c7;
       border-left: 4px solid #f59e0b;
@@ -62,6 +83,7 @@
       margin: 20px 0;
       border-radius: 4px;
     }
+
     .success {
       background: #d1fae5;
       border-left: 4px solid #10b981;
@@ -69,12 +91,26 @@
       margin: 20px 0;
       border-radius: 4px;
     }
-    ul { margin-left: 20px; }
-    li { margin: 8px 0; }
-    a { color: #2563eb; text-decoration: none; }
-    a:hover { text-decoration: underline; }
+
+    ul {
+      margin-left: 20px;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
+
 <body>
   <h1>🚀 외부 사이트 연동 가이드</h1>
   <p>3가지 방법 중 하나를 선택하여 제보 폼을 외부 사이트에 통합할 수 있습니다.</p>
@@ -134,7 +170,7 @@ const API_BASE_URL = 'https://실제도메인.com';</code></pre>
   <div class="step">
     <h3><span class="step-number">3</span>라이브러리 URL 수정</h3>
     <pre><code>&lt;!-- 이 부분을 찾아서 --&gt;
-&lt;script src="https://yoursite.com/inquiry-encrypt.js"&gt;&lt;/script&gt;
+&lt;script src="https://cherish-jiran.vercel.app/inquiry-encrypt.js"&gt;&lt;/script&gt;
 
 &lt;!-- 실제 URL로 변경 --&gt;
 &lt;script src="https://실제도메인.com/inquiry-encrypt.js"&gt;&lt;/script&gt;</code></pre>
@@ -146,7 +182,7 @@ const API_BASE_URL = 'https://실제도메인.com';</code></pre>
   </div>
 
   <div class="success">
-    ✅ <strong>완료!</strong> 이제 https://yoursite.com/sample-form.html 에서 제보 폼을 사용할 수 있습니다.
+    ✅ <strong>완료!</strong> 이제 https://cherish-jiran.vercel.app/sample-form.html 에서 제보 폼을 사용할 수 있습니다.
   </div>
 
   <h2>🔧 방법 2: 라이브러리 사용</h2>
@@ -154,7 +190,7 @@ const API_BASE_URL = 'https://실제도메인.com';</code></pre>
   <div class="step">
     <h3><span class="step-number">1</span>HTML에 라이브러리 추가</h3>
     <pre><code>&lt;!-- 페이지 하단에 추가 --&gt;
-&lt;script src="https://yoursite.com/inquiry-encrypt.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="https://cherish-jiran.vercel.app/inquiry-encrypt.js"&gt;&lt;/script&gt;</code></pre>
   </div>
 
   <div class="step">
@@ -241,4 +277,5 @@ document.getElementById('myInquiryForm').addEventListener('submit', async (e) =>
     © 2025 지란지교패밀리 윤리경영 제보관리센터
   </p>
 </body>
+
 </html>
