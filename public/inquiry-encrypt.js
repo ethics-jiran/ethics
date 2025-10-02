@@ -202,3 +202,8 @@ class InquiryEncryptor {
     return decoder.decode(decrypted);
   }
 }
+
+// 전역으로 export
+if (typeof window !== 'undefined') {
+  window.InquiryEncryptor = InquiryEncryptor;
+}
