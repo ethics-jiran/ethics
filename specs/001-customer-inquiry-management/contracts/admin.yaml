@@ -1,0 +1,401 @@
+openapi: 3.0.3
+info:
+  title: Admin Inquiry Management API
+  description: Protected API endpoints for administrators to manage customer inquiries
+  version: 1.0.0
+  contact:
+    name: Cherish Support
+    email: support@cherish.com
+
+servers:
+  - url: https://cherish-jiran.vercel.app
+    description: Production
+  - url: http://localhost:3000
+    description: Local development
+
+security:
+  - supabaseAuth: []
+
+paths:
+  /api/admin/inquiries:
+    get:
+      summary: List customer inquiries
+      description: |
+        Retrieve a paginated list of customer inquiries with optional filtering.
+        Requires admin authentication with MFA (aal2).
+      operationId: listInquiries
+      tags:
+        - Admin
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pending
+              - processing
+              - completed
+          description: Filter by inquiry status
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search in title, name, or email
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of results per page
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of results to skip
+      responses:
+        '200':
+          description: List of inquiries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InquirySummary'
+                  total:
+                    type: integer
+                    description: Total number of inquiries matching filters
+                    example: 156
+                  limit:
+                    type: integer
+                    example: 20
+                  offset:
+                    type: integer
+                    example: 0
+        '401':
+          description: Unauthorized - Missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - MFA not completed (aal1 instead of aal2)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "MFA required - please complete two-factor authentication"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/admin/inquiries/{id}:
+    get:
+      summary: Get inquiry details
+      description: |
+        Retrieve full details of a specific inquiry including customer information
+        and response history. Requires admin authentication with MFA.
+      operationId: getInquiry
+      tags:
+        - Admin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Inquiry UUID
+      responses:
+        '200':
+          description: Inquiry details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InquiryDetail'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - MFA required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Inquiry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: Update inquiry (reply or status)
+      description: |
+        Send a reply to customer and/or update inquiry status.
+        Automatically sends email notification to customer when reply is provided.
+        Requires admin authentication with MFA.
+      operationId: updateInquiry
+      tags:
+        - Admin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Inquiry UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                replyTitle:
+                  type: string
+                  minLength: 1
+                  description: Reply subject (triggers email if provided)
+                  example: "Re: Question about product features"
+                replyContent:
+                  type: string
+                  minLength: 1
+                  description: Reply message (required if replyTitle provided)
+                  example: "Thank you for your inquiry..."
+                status:
+                  type: string
+                  enum:
+                    - pending
+                    - processing
+                    - completed
+                  description: New status (optional, can be updated independently)
+              # Either reply fields OR status must be provided
+              anyOf:
+                - required: [replyTitle, replyContent]
+                - required: [status]
+      responses:
+        '200':
+          description: Inquiry updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/InquiryDetail'
+                  emailSent:
+                    type: boolean
+                    description: Whether notification email was sent to customer
+                    example: true
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Validation failed"
+                details:
+                  - field: "replyContent"
+                    message: "Reply content required when reply title provided"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - MFA required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Inquiry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error (may include email send failure)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/InquiryDetail'
+                  emailSent:
+                    type: boolean
+                    example: false
+                example:
+                  error: "Inquiry updated but email delivery failed"
+                  emailSent: false
+
+components:
+  securitySchemes:
+    supabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Supabase JWT token with aal2 (MFA completed) claim.
+        Obtain via Supabase Auth login + MFA verification.
+
+  schemas:
+    InquirySummary:
+      type: object
+      required:
+        - id
+        - title
+        - email
+        - name
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          example: "Question about product features"
+        email:
+          type: string
+          format: email
+          example: "customer@example.com"
+        name:
+          type: string
+          example: "John Doe"
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - completed
+          example: "pending"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-02T10:30:00Z"
+        hasReply:
+          type: boolean
+          description: Whether admin has replied
+          example: false
+
+    InquiryDetail:
+      type: object
+      required:
+        - id
+        - title
+        - content
+        - email
+        - name
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          example: "Question about product features"
+        content:
+          type: string
+          example: "I would like to know if your product supports..."
+        email:
+          type: string
+          format: email
+          example: "customer@example.com"
+        name:
+          type: string
+          example: "John Doe"
+        phone:
+          type: string
+          nullable: true
+          example: "+1-555-123-4567"
+        authCode:
+          type: string
+          description: Verification code (admin can see for reference)
+          example: "ABC123"
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - completed
+          example: "processing"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-02T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-02T14:15:00Z"
+        replyTitle:
+          type: string
+          nullable: true
+          example: "Re: Question about product features"
+        replyContent:
+          type: string
+          nullable: true
+          example: "Thank you for your inquiry. Yes, our product supports..."
+        repliedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-10-02T14:15:00Z"
+        repliedBy:
+          type: string
+          format: uuid
+          nullable: true
+          description: UUID of admin who replied
+          example: "7f3e4567-e89b-12d3-a456-426614174000"
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+          description: Validation error details (if applicable)

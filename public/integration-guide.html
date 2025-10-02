@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>외부 사이트 연동 가이드</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      color: #333;
+    }
+    h1 { color: #2563eb; margin-bottom: 10px; }
+    h2 { color: #1e40af; margin-top: 40px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+    h3 { color: #3b82f6; margin-top: 30px; }
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+    }
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+    }
+    .step {
+      background: #f0f9ff;
+      border-left: 4px solid #2563eb;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .step-number {
+      background: #2563eb;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .note {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .success {
+      background: #d1fae5;
+      border-left: 4px solid #10b981;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    ul { margin-left: 20px; }
+    li { margin: 8px 0; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>🚀 외부 사이트 연동 가이드</h1>
+  <p>3가지 방법 중 하나를 선택하여 제보 폼을 외부 사이트에 통합할 수 있습니다.</p>
+
+  <hr style="margin: 40px 0; border: none; border-top: 1px solid #e5e7eb;">
+
+  <h2>📋 방법 비교</h2>
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <thead>
+      <tr style="background: #f3f4f6;">
+        <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb;">방법</th>
+        <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb;">난이도</th>
+        <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb;">장점</th>
+        <th style="padding: 12px; text-align: left; border: 1px solid #e5e7eb;">단점</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;"><strong>1. HTML 복사</strong></td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">⭐ 쉬움</td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">즉시 사용 가능</td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">디자인 커스터마이징 제한적</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;"><strong>2. 라이브러리 사용</strong></td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">⭐⭐ 보통</td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">자유로운 디자인</td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">HTML 작성 필요</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;"><strong>3. 직접 구현</strong></td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">⭐⭐⭐ 어려움</td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">완전한 제어</td>
+        <td style="padding: 12px; border: 1px solid #e5e7eb;">암호화 로직 직접 구현</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>🎯 방법 1: HTML 파일 복사 (추천)</h2>
+
+  <div class="step">
+    <h3><span class="step-number">1</span>샘플 HTML 다운로드</h3>
+    <p>아래 링크에서 완성된 HTML 파일을 다운로드하세요:</p>
+    <p>📥 <a href="/sample-form.html" download>sample-form.html 다운로드</a></p>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">2</span>API URL 수정</h3>
+    <p>다운로드한 파일을 텍스트 에디터로 열고 다음 부분을 수정하세요:</p>
+    <pre><code>// 이 부분을 찾아서
+const API_BASE_URL = 'https://yoursite.com';
+
+// 실제 API URL로 변경
+const API_BASE_URL = 'https://실제도메인.com';</code></pre>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">3</span>라이브러리 URL 수정</h3>
+    <pre><code>&lt;!-- 이 부분을 찾아서 --&gt;
+&lt;script src="https://yoursite.com/inquiry-encrypt.js"&gt;&lt;/script&gt;
+
+&lt;!-- 실제 URL로 변경 --&gt;
+&lt;script src="https://실제도메인.com/inquiry-encrypt.js"&gt;&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">4</span>웹사이트에 업로드</h3>
+    <p>수정한 HTML 파일을 웹사이트에 업로드하면 완료!</p>
+  </div>
+
+  <div class="success">
+    ✅ <strong>완료!</strong> 이제 https://yoursite.com/sample-form.html 에서 제보 폼을 사용할 수 있습니다.
+  </div>
+
+  <h2>🔧 방법 2: 라이브러리 사용</h2>
+
+  <div class="step">
+    <h3><span class="step-number">1</span>HTML에 라이브러리 추가</h3>
+    <pre><code>&lt;!-- 페이지 하단에 추가 --&gt;
+&lt;script src="https://yoursite.com/inquiry-encrypt.js"&gt;&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">2</span>폼 HTML 작성</h3>
+    <pre><code>&lt;form id="myInquiryForm"&gt;
+  &lt;input type="text" id="title" placeholder="제목" required&gt;
+  &lt;textarea id="content" placeholder="내용" required&gt;&lt;/textarea&gt;
+  &lt;input type="text" id="name" placeholder="이름" required&gt;
+  &lt;input type="email" id="email" placeholder="이메일" required&gt;
+  &lt;input type="tel" id="phone" placeholder="전화번호"&gt;
+  &lt;button type="submit"&gt;제출&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+  </div>
+
+  <div class="step">
+    <h3><span class="step-number">3</span>JavaScript 코드 추가</h3>
+    <pre><code>const encryptor = new InquiryEncryptor('https://yoursite.com');
+
+// 초기화
+await encryptor.init();
+
+// 폼 제출 처리
+document.getElementById('myInquiryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const result = await encryptor.submit({
+    title: document.getElementById('title').value,
+    content: document.getElementById('content').value,
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value
+  });
+
+  alert('제보가 접수되었습니다!');
+});</code></pre>
+  </div>
+
+  <h2>💻 방법 3: 직접 구현</h2>
+
+  <div class="note">
+    <strong>⚠️ 주의:</strong> 이 방법은 암호화 로직을 직접 구현해야 하므로 고급 사용자에게 권장됩니다.
+    <br><br>
+    자세한 내용은 <a href="/api-docs.html">API 문서</a>를 참고하세요.
+  </div>
+
+  <div class="step">
+    <h3>기본 흐름</h3>
+    <ol>
+      <li><code>GET /api/public-key</code>로 공개키 가져오기</li>
+      <li>Web Crypto API로 RSA-OAEP 암호화 수행</li>
+      <li><code>POST /api/inquiries</code>로 암호화된 데이터 전송</li>
+    </ol>
+    <p>전체 예제 코드는 <a href="/api-docs.html#example">API 문서</a>를 참고하세요.</p>
+  </div>
+
+  <h2>🔒 보안 안내</h2>
+  <ul>
+    <li>모든 데이터는 <strong>RSA 공개키</strong>로 암호화되어 전송됩니다</li>
+    <li>네트워크 페이로드에는 암호문만 노출됩니다</li>
+    <li>반드시 <strong>HTTPS</strong>를 사용하세요</li>
+    <li>공개키는 캐시하여 재사용하세요</li>
+  </ul>
+
+  <h2>📚 참고 자료</h2>
+  <ul>
+    <li>📄 <a href="/api-docs.html">API 문서</a> - 전체 API 스펙</li>
+    <li>📥 <a href="/sample-form.html" download>샘플 HTML</a> - 즉시 사용 가능한 폼</li>
+    <li>📦 <a href="/inquiry-encrypt.js" download>암호화 라이브러리</a> - JavaScript 라이브러리</li>
+  </ul>
+
+  <h2>❓ 문제 해결</h2>
+
+  <h3>Q: CORS 에러가 발생해요</h3>
+  <p><strong>A:</strong> API 서버에 CORS 설정이 필요합니다. 관리자에게 문의하세요.</p>
+
+  <h3>Q: 암호화 초기화가 실패해요</h3>
+  <p><strong>A:</strong> API URL이 올바른지 확인하고, 공개키 엔드포인트가 응답하는지 확인하세요.</p>
+
+  <h3>Q: 제출 후 이메일이 안 와요</h3>
+  <p><strong>A:</strong> 스팸 폴더를 확인하거나, 관리자에게 문의하세요.</p>
+
+  <hr style="margin: 40px 0; border: none; border-top: 1px solid #e5e7eb;">
+  <p style="text-align: center; color: #6b7280; font-size: 14px;">
+    © 2025 지란지교패밀리 윤리경영 제보관리센터
+  </p>
+</body>
+</html>

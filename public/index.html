@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>외부 연동 리소스 - 지란지교패밀리 윤리경영 제보관리센터</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      background: white;
+      border-radius: 20px;
+      padding: 60px 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      color: #1e293b;
+      font-size: 32px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+
+    .card {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      border-color: #667eea;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .card h2 {
+      color: #1e293b;
+      font-size: 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card p {
+      color: #64748b;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .card a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #667eea;
+      transition: all 0.3s;
+    }
+
+    .card a:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    .icon {
+      font-size: 24px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 30px;
+      border-top: 1px solid #e2e8f0;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 외부 연동 리소스</h1>
+    <p class="subtitle">지란지교패밀리 윤리경영 제보관리센터</p>
+
+    <div class="card">
+      <h2>
+        <span class="icon">🚀</span>
+        통합 가이드
+        <span class="badge">시작하기</span>
+      </h2>
+      <p>
+        외부 사이트에 제보 폼을 통합하는 3가지 방법을 단계별로 안내합니다.
+        <br>초보자도 쉽게 따라할 수 있는 상세한 설명과 예제 코드를 제공합니다.
+      </p>
+      <a href="/integration-guide.html">
+        가이드 보기 →
+      </a>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span class="icon">📥</span>
+        샘플 HTML 폼
+      </h2>
+      <p>
+        즉시 사용 가능한 완성된 제보 폼 HTML 파일입니다.
+        <br>다운로드 후 URL만 수정하면 바로 사용할 수 있습니다.
+      </p>
+      <a href="/sample-form.html" download>
+        다운로드 →
+      </a>
+      <a href="/sample-form.html" target="_blank" style="margin-left: 10px;">
+        미리보기 →
+      </a>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span class="icon">📚</span>
+        API 문서
+      </h2>
+      <p>
+        암호화 방식, 엔드포인트 스펙, 직접 구현을 위한 기술 문서입니다.
+        <br>고급 사용자를 위한 상세한 API 레퍼런스를 제공합니다.
+      </p>
+      <a href="/api-docs.html">
+        문서 보기 →
+      </a>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span class="icon">📦</span>
+        암호화 라이브러리
+      </h2>
+      <p>
+        데이터 암호화를 자동으로 처리하는 JavaScript 라이브러리입니다.
+        <br>Web Crypto API 기반 RSA-OAEP 암호화를 간단하게 사용할 수 있습니다.
+      </p>
+      <a href="/inquiry-encrypt.js" download>
+        다운로드 →
+      </a>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span class="icon">🔑</span>
+        공개키 API
+      </h2>
+      <p>
+        암호화에 필요한 공개키를 제공하는 API 엔드포인트입니다.
+        <br>라이브러리가 자동으로 호출하므로 직접 사용할 필요는 없습니다.
+      </p>
+      <a href="/api/public-key" target="_blank">
+        테스트 →
+      </a>
+    </div>
+
+    <div class="footer">
+      <p><strong>보안 안내:</strong> 모든 데이터는 RSA 공개키로 암호화되어 전송됩니다.</p>
+      <p>© 2025 지란지교패밀리 윤리경영 제보관리센터</p>
+    </div>
+  </div>
+</body>
+</html>
