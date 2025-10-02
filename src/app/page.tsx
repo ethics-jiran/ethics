@@ -7,8 +7,18 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/login');
+    router.replace('/admin');
   }, [router]);
 
-  return null;
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      fontFamily: 'system-ui, sans-serif'
+    }}>
+      <div>Redirecting...</div>
+    </div>
+  );
 }
