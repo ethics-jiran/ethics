@@ -154,7 +154,7 @@
   <div class="step">
     <h3><span class="step-number">1</span>샘플 HTML 다운로드</h3>
     <p>아래 링크에서 완성된 HTML 파일을 다운로드하세요:</p>
-    <p>📥 <a href="/sample-form.html" download>sample-form.html 다운로드</a></p>
+    <p>📥 <a href="/sample/sample-form" download>sample-form.html 다운로드</a></p>
   </div>
 
   <div class="step">
@@ -173,7 +173,7 @@ const API_BASE_URL = 'https://실제도메인.com';</code></pre>
 &lt;script src="https://cherish-jiran.vercel.app/api/inquiry-encrypt"&gt;&lt;/script&gt;
 
 &lt;!-- 실제 URL로 변경 --&gt;
-&lt;script src="https://실제도메인.com/inquiry-encrypt.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="https://실제도메인.com/api/inquiry-encrypt"&gt;&lt;/script&gt;</code></pre>
   </div>
 
   <div class="step">
@@ -182,7 +182,7 @@ const API_BASE_URL = 'https://실제도메인.com';</code></pre>
   </div>
 
   <div class="success">
-    ✅ <strong>완료!</strong> 이제 https://cherish-jiran.vercel.app/sample-form.html 에서 제보 폼을 사용할 수 있습니다.
+    ✅ <strong>완료!</strong> 이제 https://cherish-jiran.vercel.app/sample/sample-form 에서 제보 폼을 사용할 수 있습니다.
   </div>
 
   <h2>🔧 방법 2: 라이브러리 사용</h2>
@@ -233,7 +233,7 @@ document.getElementById('myInquiryForm').addEventListener('submit', async (e) =>
   <div class="note">
     <strong>⚠️ 주의:</strong> 이 방법은 암호화 로직을 직접 구현해야 하므로 고급 사용자에게 권장됩니다.
     <br><br>
-    자세한 내용은 <a href="/api-docs.html">API 문서</a>를 참고하세요.
+    자세한 내용은 <a href="/docs/api-docs">API 문서</a>를 참고하세요.
   </div>
 
   <div class="step">
@@ -243,7 +243,7 @@ document.getElementById('myInquiryForm').addEventListener('submit', async (e) =>
       <li>Web Crypto API로 RSA-OAEP 암호화 수행</li>
       <li><code>POST /api/inquiries</code>로 암호화된 데이터 전송</li>
     </ol>
-    <p>전체 예제 코드는 <a href="/api-docs.html#example">API 문서</a>를 참고하세요.</p>
+    <p>전체 예제 코드는 <a href="/docs/api-docs#example">API 문서</a>를 참고하세요.</p>
   </div>
 
   <h2>🔒 보안 안내</h2>
@@ -256,9 +256,9 @@ document.getElementById('myInquiryForm').addEventListener('submit', async (e) =>
 
   <h2>📚 참고 자료</h2>
   <ul>
-    <li>📄 <a href="/api-docs.html">API 문서</a> - 전체 API 스펙</li>
-    <li>📥 <a href="/sample-form.html" download>샘플 HTML</a> - 즉시 사용 가능한 폼</li>
-    <li>📦 <a href="/inquiry-encrypt.js" download>암호화 라이브러리</a> - JavaScript 라이브러리</li>
+    <li>📄 <a href="/docs/api-docs">API 문서</a> - 전체 API 스펙</li>
+    <li>📥 <a href="/sample/sample-form" download>샘플 HTML</a> - 즉시 사용 가능한 폼</li>
+    <li>📦 <a href="/api/inquiry-encrypt" download>암호화 라이브러리</a> - JavaScript 라이브러리</li>
   </ul>
 
   <h2>❓ 문제 해결</h2>
