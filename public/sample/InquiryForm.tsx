@@ -32,7 +32,7 @@ export default function InquiryForm() {
   const [errorMessage, setErrorMessage] = useState('');
   const [ready, setReady] = useState(false);
 
-  // 스크립트 로딩 대기
+  // 전역 스크립트 로딩 대기 (동적 로딩 X, 폴링만 사용)
   useEffect(() => {
     console.log('[InquiryForm] 스크립트 로딩 체크 시작');
 
@@ -50,9 +50,9 @@ export default function InquiryForm() {
 
     console.log('[InquiryForm] InquiryEncryptor 대기 중...');
 
-    // 100ms마다 확인 (최대 5초)
+    // 100ms마다 확인 (최대 10초)
     const interval = setInterval(() => {
-      console.log('[InquiryForm] 폴링 중... window.InquiryEncryptor:', window.InquiryEncryptor);
+      console.log('[InquiryForm] 폴링 중... window.InquiryEncryptor:', typeof window.InquiryEncryptor);
       if (checkScript()) {
         clearInterval(interval);
       }
@@ -62,9 +62,10 @@ export default function InquiryForm() {
       clearInterval(interval);
       if (!window.InquiryEncryptor) {
         console.error('[InquiryForm] ❌ 암호화 라이브러리 로딩 타임아웃');
-        setErrorMessage('암호화 라이브러리 로딩에 실패했습니다.');
+        console.error('[InquiryForm] 전역 스크립트 설정에서 https://cherish-jiran.vercel.app/inquiry-encrypt.js 를 추가했는지 확인해주세요.');
+        setErrorMessage('암호화 라이브러리 로딩에 실패했습니다. 페이지를 새로고침해주세요.');
       }
-    }, 5000);
+    }, 10000);
 
     return () => {
       clearInterval(interval);
