@@ -29,6 +29,13 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
+  // Redirect root to admin
+  if (request.nextUrl.pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/admin';
+    return NextResponse.redirect(url);
+  }
+
   // Refresh session if expired
   const {
     data: { user },
