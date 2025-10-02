@@ -1,4 +1,6 @@
-/**
+import { NextResponse } from 'next/server';
+
+const jsContent = `/**
  * Inquiry Encryption Library (AES-GCM)
  * 외부 사이트에서 제보 데이터를 암호화하여 전송하기 위한 라이브러리
  */
@@ -6,14 +8,14 @@
 class InquiryEncryptor {
   constructor(supabaseUrl = 'https://domjuxvrnglsohyqdzmi.supabase.co') {
     this.supabaseUrl = supabaseUrl;
-    this.functionsUrl = `${supabaseUrl}/functions/v1`;
+    this.functionsUrl = \`\${supabaseUrl}/functions/v1\`;
   }
 
   /**
    * 일회성 AES 키 요청
    */
   async getEncryptionKey() {
-    const response = await fetch(`${this.functionsUrl}/aes-key`);
+    const response = await fetch(\`\${this.functionsUrl}/aes-key\`);
     if (!response.ok) {
       throw new Error('Failed to get encryption key');
     }
@@ -106,7 +108,7 @@ class InquiryEncryptor {
   async submit(formData) {
     const encrypted = await this.encrypt(formData);
 
-    const response = await fetch(`${this.functionsUrl}/submit-inquiry`, {
+    const response = await fetch(\`\${this.functionsUrl}/submit-inquiry\`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -133,7 +135,7 @@ class InquiryEncryptor {
     const encryptedEmail = await this.encryptText(email, key);
     const encryptedAuthCode = await this.encryptText(authCode.toUpperCase(), key);
 
-    const response = await fetch(`${this.functionsUrl}/verify-inquiry`, {
+    const response = await fetch(\`\${this.functionsUrl}/verify-inquiry\`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -206,4 +208,14 @@ class InquiryEncryptor {
 // 전역으로 export
 if (typeof window !== 'undefined') {
   window.InquiryEncryptor = InquiryEncryptor;
+}
+`;
+
+export async function GET() {
+  return new NextResponse(jsContent, {
+    headers: {
+      'Content-Type': 'application/javascript; charset=utf-8',
+      'Cache-Control': 'public, max-age=0, must-revalidate',
+    },
+  });
 }
