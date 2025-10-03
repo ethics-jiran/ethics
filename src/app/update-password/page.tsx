@@ -22,7 +22,6 @@ export default function UpdatePasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     checkMFA();
@@ -30,6 +29,7 @@ export default function UpdatePasswordPage() {
 
   const checkMFA = async () => {
     try {
+      const supabase = createClient();
       const { data: factors } = await supabase.auth.mfa.listFactors();
       if (factors && factors.totp && factors.totp.length > 0) {
         setNeedsMFA(true);
@@ -68,6 +68,8 @@ export default function UpdatePasswordPage() {
     }
 
     try {
+      const supabase = createClient();
+
       // If MFA is enabled, verify TOTP first
       if (needsMFA) {
         if (!totpCode || totpCode.length !== 6) {
