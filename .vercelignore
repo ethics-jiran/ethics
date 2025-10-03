@@ -13,7 +13,7 @@ CLAUDE.md
 specs
 
 # Supabase (local development only)
-supabase
+/supabase
 
 # Sample files for external use (not needed in deployment)
 sample-for-gachi
