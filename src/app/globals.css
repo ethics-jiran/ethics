@@ -1,8 +1,10 @@
 @import "tailwindcss";
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Tailwind Theme Colors */
   --background: hsl(0 0% 100%);
   --foreground: hsl(0 0% 3.9%);
   --card: hsl(0 0% 100%);
@@ -36,6 +38,35 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Custom Gray Scale */
+  --gray-900: #111827;
+  --gray-700: #374151;
+  --gray-600: #4B5563;
+  --gray-500: #6B7280;
+  --gray-400: #9CA3AF;
+  --gray-300: #d1d5db;
+
+  /* Custom Brand Colors */
+  --color-primary: #1E293B;
+  --color-secondary: #334155;
+  --color-accent: #475569;
+  --color-muted: #64748B;
+
+  /* ESG Colors */
+  --color-orange: #FF8A20;
+  --color-green: #00D084;
+  --color-blue: #4A90E2;
+
+  /* Custom Text Colors */
+  --color-border: rgba(17, 24, 39, 0.1);
+  --color-text-primary: rgba(17, 24, 39, 0.8);
+  --color-text-secondary: rgba(17, 24, 39, 0.55);
+  --color-text-tertiary: rgba(17, 24, 39, 0.7);
+  --color-text-quaternary: rgba(17, 24, 39, 0.6);
+
+  /* Layout */
+  --max-width: 1280px;
 }
 
 .dark {
@@ -114,8 +145,10 @@
 }
 
 body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--background);
   color: var(--foreground);
+  line-height: 1.6;
 }
 
 @layer base {
@@ -124,5 +157,255 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Typography Utilities */
+  .title {
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+
+  .title-xl {
+    font-size: 56px;
+    letter-spacing: -1.12px;
+    line-height: 1.1;
+  }
+
+  .title-lg {
+    font-size: 48px;
+    letter-spacing: -0.96px;
+    line-height: 1.2;
+  }
+
+  .title-md {
+    font-size: 24px;
+    letter-spacing: -0.12px;
+    line-height: 1.5;
+  }
+
+  .title-sm {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.36px;
+    line-height: 1.5;
+  }
+
+  .text {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  .text-lg {
+    font-size: 20px;
+    letter-spacing: -0.4px;
+    line-height: 1.45;
+  }
+
+  .text-md {
+    font-size: 16px;
+    letter-spacing: -0.08px;
+    line-height: 1.45;
+  }
+
+  .text-sm {
+    font-size: 14px;
+    letter-spacing: -0.05px;
+    line-height: 1.45;
+  }
+
+  /* Button Utilities */
+  .btn {
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.09px;
+    line-height: 1.45;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    width: fit-content;
+  }
+
+  .btn-primary {
+    background: var(--gray-900);
+  }
+
+  .btn-accent {
+    background: var(--color-orange);
+  }
+
+  .btn:hover {
+    opacity: 0.9;
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Card Utilities */
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Form Utilities */
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gray-700);
+    margin-bottom: 12px;
+  }
+
+  .required-dot {
+    width: 4px;
+    height: 4px;
+    background: #ff0000;
+    border-radius: 50%;
+    display: inline-block;
+    margin-top: 2px;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e7e9ec;
+    border-radius: 6px;
+    padding: 14px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gray-900);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: var(--color-orange);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 138, 32, 0.1);
+  }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: #d1d5db;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 96px;
+  }
+
+  /* Alert Messages */
+  .alert {
+    padding: 12px 16px;
+    margin-top: 16px;
+    border-radius: 8px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.05px;
+    line-height: 1.45;
+  }
+
+  .alert-success {
+    background: #d1fae5;
+    border: 1px solid #a7f3d0;
+    color: #059669;
+  }
+
+  .alert-error {
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+  }
+
+  .alert-info {
+    background: #e0f2fe;
+    border: 1px solid #bae6fd;
+    color: #0369a1;
+  }
+
+  /* Responsive Typography */
+  @media (max-width: 768px) {
+    .title-xl {
+      font-size: 28px;
+      letter-spacing: -0.56px;
+    }
+
+    .title-lg {
+      font-size: 24px;
+      letter-spacing: -0.48px;
+    }
+
+    .title-md {
+      font-size: 18px;
+      letter-spacing: -0.09px;
+    }
+
+    .title-sm {
+      font-size: 14px;
+      letter-spacing: -0.28px;
+    }
+
+    .text-lg {
+      font-size: 13px;
+      letter-spacing: -0.26px;
+    }
+
+    .text-md {
+      font-size: 13px;
+      letter-spacing: -0.065px;
+    }
+
+    .text-sm {
+      font-size: 12px;
+      letter-spacing: -0.06px;
+    }
+
+    .btn {
+      font-size: 16px;
+      padding: 10px 14px;
+    }
+
+    .card {
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    form .btn {
+      width: 100%;
+      font-size: 14px;
+      padding: 10px 16px;
+      border-radius: 8px;
+    }
   }
 }

@@ -1,39 +1,51 @@
-'use client';
+"use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
-import Link from 'next/link';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function ResetPasswordPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     setSuccess(false);
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/update-password`,
+      const response = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
       });
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "비밀번호 재설정 요청에 실패했습니다");
+      }
 
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message || '비밀번호 재설정 요청에 실패했습니다');
+      setError(err.message || "비밀번호 재설정 요청에 실패했습니다");
     } finally {
       setLoading(false);
     }
@@ -45,8 +57,8 @@ export default function ResetPasswordPage() {
         <div className="flex w-full max-w-sm flex-col gap-6">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col items-center gap-2">
-              <div className="flex h-16 w-16 items-center justify-center rounded-md">
-                <Image src="/logo.svg" alt="Logo" width={64} height={64} />
+              <div className="flex h-32 w-32 items-center justify-center rounded-md">
+                <Image src="/logo.svg" alt="Logo" width={128} height={128} />
               </div>
               <h1 className="text-xl font-bold">이메일을 확인하세요</h1>
               <div className="text-center text-sm text-muted-foreground">
@@ -71,8 +83,8 @@ export default function ResetPasswordPage() {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
-            <div className="flex h-16 w-16 items-center justify-center rounded-md">
-              <Image src="/logo.svg" alt="Logo" width={64} height={64} />
+            <div className="flex h-32 w-32 items-center justify-center rounded-md">
+              <Image src="/logo.svg" alt="Logo" width={128} height={128} />
             </div>
             <h1 className="text-xl font-bold">비밀번호 재설정</h1>
             <div className="text-center text-sm text-muted-foreground">
@@ -97,10 +109,12 @@ export default function ResetPasswordPage() {
               />
             </div>
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? '전송 중...' : '재설정 링크 전송'}
+              {loading ? "전송 중..." : "재설정 링크 전송"}
             </Button>
             <div className="text-center text-sm">
-              <Link href="/login" className="text-muted-foreground hover:text-primary underline underline-offset-4">
+              <Link
+                href="/login"
+                className="text-muted-foreground hover:text-primary underline underline-offset-4">
                 로그인 페이지로 돌아가기
               </Link>
             </div>

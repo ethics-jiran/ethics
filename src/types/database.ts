@@ -39,6 +39,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      aes_keys: {
+        Row: {
+          key_id: string
+          key: string
+          expires_at: string
+          consumed: boolean
+          created_at: string
+        }
+        Insert: {
+          key_id: string
+          key: string
+          expires_at: string
+          consumed?: boolean
+          created_at?: string
+        }
+        Update: {
+          key_id?: string
+          key?: string
+          expires_at?: string
+          consumed?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      password_reset_tokens: {
+        Row: {
+          id: string
+          email: string
+          token: string
+          expires_at: string
+          used: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          token: string
+          expires_at: string
+          used?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          token?: string
+          expires_at?: string
+          used?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      faqs: {
+        Row: {
+          id: string
+          title: string
+          content: string[] | null
+          display_order: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          content?: string[] | null
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          content?: string[] | null
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inquiries: {
         Row: {
           auth_code: string

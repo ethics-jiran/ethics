@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { use, useState } from 'react';
-import useSWR from 'swr';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { use, useState } from "react";
+import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -17,28 +23,29 @@ export default function InquiryDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [replyTitle, setReplyTitle] = useState('');
-  const [replyContent, setReplyContent] = useState('');
-  const [status, setStatus] = useState('');
+  const [replyTitle, setReplyTitle] = useState("");
+  const [replyContent, setReplyContent] = useState("");
+  const [status, setStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const { data: inquiry, error: loadError, mutate } = useSWR(
-    `/api/admin/inquiries/${id}`,
-    fetcher
-  );
+  const {
+    data: inquiry,
+    error: loadError,
+    mutate,
+  } = useSWR(`/api/admin/inquiries/${id}`, fetcher);
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       const res = await fetch(`/api/admin/inquiries/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           replyTitle,
           replyContent,
@@ -47,24 +54,24 @@ export default function InquiryDetailPage({
       });
 
       if (!res.ok) {
-        throw new Error('Failed to submit reply');
+        throw new Error("답변 전송에 실패했습니다");
       }
 
-      setSuccess('Reply sent successfully!');
-      setReplyTitle('');
-      setReplyContent('');
+      setSuccess("답변이 성공적으로 전송되었습니다!");
+      setReplyTitle("");
+      setReplyContent("");
       mutate();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "오류가 발생했습니다");
     } finally {
       setSubmitting(false);
     }
   };
 
   const statusText = {
-    pending: '대기중',
-    processing: '처리중',
-    completed: '완료'
+    pending: "대기중",
+    processing: "처리중",
+    completed: "완료",
   };
 
   if (loadError) {
@@ -95,19 +102,18 @@ export default function InquiryDetailPage({
             <div>
               <CardTitle>{inquiry.title}</CardTitle>
               <CardDescription>
-                {inquiry.name} ({inquiry.email}) •{' '}
-                {new Date(inquiry.created_at).toLocaleDateString('ko-KR')}
+                {inquiry.name} ({inquiry.email}) •{" "}
+                {new Date(inquiry.created_at).toLocaleDateString("ko-KR")}
               </CardDescription>
             </div>
             <Badge
               variant={
-                inquiry.status === 'completed'
-                  ? 'default'
-                  : inquiry.status === 'processing'
-                  ? 'secondary'
-                  : 'outline'
-              }
-            >
+                inquiry.status === "completed"
+                  ? "default"
+                  : inquiry.status === "processing"
+                    ? "secondary"
+                    : "outline"
+              }>
               {statusText[inquiry.status as keyof typeof statusText]}
             </Badge>
           </div>
@@ -136,7 +142,8 @@ export default function InquiryDetailPage({
                 {inquiry.reply_content}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                답변일: {new Date(inquiry.replied_at).toLocaleDateString('ko-KR')}
+                답변일:{" "}
+                {new Date(inquiry.replied_at).toLocaleDateString("ko-KR")}
               </p>
             </div>
           )}
@@ -146,7 +153,7 @@ export default function InquiryDetailPage({
       <Card>
         <CardHeader>
           <CardTitle>답변 보내기</CardTitle>
-          <CardDescription>제보에 답변하세요</CardDescription>
+          <CardDescription>제보에 답변을 작성해주세요.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmitReply} className="space-y-4">
@@ -185,13 +192,12 @@ export default function InquiryDetailPage({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">상태 변경 (선택)</Label>
+              <Label htmlFor="status">처리 상태</Label>
               <select
                 id="status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full border rounded-md px-3 py-2 text-sm"
-              >
+                className="w-full border rounded-md px-3 py-2 text-sm">
                 <option value="">현재 상태 유지</option>
                 <option value="pending">대기중</option>
                 <option value="processing">처리중</option>
@@ -200,7 +206,7 @@ export default function InquiryDetailPage({
             </div>
 
             <Button type="submit" disabled={submitting} className="w-full">
-              {submitting ? '전송 중...' : '답변 전송'}
+              {submitting ? "전송 중..." : "답변 전송"}
             </Button>
           </form>
         </CardContent>

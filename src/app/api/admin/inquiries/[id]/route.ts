@@ -101,18 +101,20 @@ export async function PATCH(
     let emailSent = false;
     if (shouldSendEmail) {
       try {
-        const { error: emailError } = await supabase.functions.invoke(
-          'send-reply-email',
-          {
-            body: {
-              email: data.email,
-              inquiryId: data.id,
-              replyTitle: data.reply_title,
-              replyContent: data.reply_content,
-            },
-          }
-        );
-        emailSent = !emailError;
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+        const response = await fetch(`${baseUrl}/api/email/send-reply-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: data.email,
+            inquiryId: data.id,
+            replyTitle: data.reply_title,
+            replyContent: data.reply_content,
+          }),
+        });
+        emailSent = response.ok;
       } catch (emailError) {
         console.error('Email sending failed:', emailError);
       }

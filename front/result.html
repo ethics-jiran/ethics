@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제보 조회 - 지란지교 ESG</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Main Content -->
+    <section class="result">
+        <div class="container flex-col">
+            <!-- 페이지 헤더 -->
+            <div class="text-wrapper">
+                <p class="label">제보 조회</p>
+                <h2 class="title title-lg">처리 결과 확인</h2>
+                <p class="text text-lg">
+                    제보 접수 시 받으신 이메일과 인증 코드로<br>
+                    제보 내역 및 답변을 확인하실 수 있습니다.
+                </p>
+            </div>
+
+            <!-- InquiryCheck 위젯이 여기에 렌더링됩니다 -->
+            <div id="inquiry-check-root"></div>
+        </div>
+    </section>
+
+    <!-- React 로드 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- 암호화 라이브러리 로드 -->
+    <script src="https://cherish-jiran.vercel.app/api/inquiry-encrypt"></script>
+
+    <!-- InquiryCheck 위젯 로드 -->
+    <script type="text/babel" src="InquiryCheck/InquiryCheck.tsx"></script>
+
+    <script type="text/babel">
+        const { StrictMode } = React;
+        const root = ReactDOM.createRoot(document.getElementById('inquiry-check-root'));
+        root.render(
+            <StrictMode>
+                <InquiryCheck />
+            </StrictMode>
+        );
+    </script>
+</body>
+
+</html>

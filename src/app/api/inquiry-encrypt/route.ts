@@ -6,16 +6,15 @@ const jsContent = `/**
  */
 
 class InquiryEncryptor {
-  constructor(supabaseUrl = 'https://domjuxvrnglsohyqdzmi.supabase.co') {
-    this.supabaseUrl = supabaseUrl;
-    this.functionsUrl = \`\${supabaseUrl}/functions/v1\`;
+  constructor(apiUrl = 'https://cherish-jiran.vercel.app/api') {
+    this.apiUrl = apiUrl;
   }
 
   /**
    * 일회성 AES 키 요청
    */
   async getEncryptionKey() {
-    const response = await fetch(\`\${this.functionsUrl}/aes-key\`);
+    const response = await fetch(\`\${this.apiUrl}/aes-key\`);
     if (!response.ok) {
       throw new Error('Failed to get encryption key');
     }
@@ -108,7 +107,7 @@ class InquiryEncryptor {
   async submit(formData) {
     const encrypted = await this.encrypt(formData);
 
-    const response = await fetch(\`\${this.functionsUrl}/submit-inquiry\`, {
+    const response = await fetch(\`\${this.apiUrl}/submit-inquiry\`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -135,7 +134,7 @@ class InquiryEncryptor {
     const encryptedEmail = await this.encryptText(email, key);
     const encryptedAuthCode = await this.encryptText(authCode.toUpperCase(), key);
 
-    const response = await fetch(\`\${this.functionsUrl}/verify-inquiry\`, {
+    const response = await fetch(\`\${this.apiUrl}/verify-inquiry\`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

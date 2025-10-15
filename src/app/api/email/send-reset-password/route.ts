@@ -1,0 +1,135 @@
+import { NextRequest, NextResponse } from "next/server";
+import nodemailer from "nodemailer";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { email, resetToken } = await req.json();
+
+    // Validate required fields
+    if (!email || !resetToken) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // SMTP configuration
+    const smtpHostname = process.env.SMTP_HOSTNAME;
+    const smtpPort = process.env.SMTP_PORT;
+    const smtpUsername = process.env.SMTP_USERNAME;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+    const smtpFrom = process.env.SMTP_FROM || smtpUsername;
+
+    if (!smtpHostname || !smtpPort || !smtpUsername || !smtpPassword) {
+      console.error("SMTP configuration not complete");
+      return NextResponse.json(
+        { error: "Email service not configured" },
+        { status: 500 }
+      );
+    }
+
+    // Create SMTP transporter
+    const transporter = nodemailer.createTransport({
+      host: smtpHostname,
+      port: Number(smtpPort),
+      secure: Number(smtpPort) === 465,
+      auth: {
+        user: smtpUsername,
+        pass: smtpPassword,
+      },
+    });
+
+    const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/update-password?token=${resetToken}`;
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 30px; text-align: center;">
+                            <h1 style="color: #111827; margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.56px;">
+                                지란지교패밀리 윤리경영 상담센터 비밀번호 재설정
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <p style="color: #374151; font-size: 14px; line-height: 1.45; letter-spacing: -0.08px; margin: 0 0 20px 0; text-align: center;">
+                                지란지교패밀리 윤리경영 상담센터 요청을 받았습니다.<br>
+                                아래 버튼을 클릭하여 비밀번호를 재설정하세요.
+                            </p>
+
+                            <!-- Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="${resetUrl}" style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 12px; font-size: 14px; font-weight: 700; letter-spacing: -0.08px;">
+                                            비밀번호 재설정
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Info Box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="border-left: 4px solid #FF8A20; background-color: #ff8c200d; border-radius: 8px; margin: 30px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="color: #111827; font-size: 14px; letter-spacing: -0.05px; margin: 0 0 10px 0; font-weight: 700;">
+                                            안내사항
+                                        </p>
+                                        <p style="color: #4B5563; font-size: 13px; line-height: 1.6; letter-spacing: -0.065px; margin: 0;">
+                                            • 이 링크는 1시간 동안만 유효합니다<br>
+                                            • 비밀번호 재설정을 요청하지 않으셨다면 이 이메일을 무시하세요<br>
+                                            • 보안을 위해 링크를 다른 사람과 공유하지 마세요
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid rgba(17, 24, 39, 0.1);">
+                            <p style="color: #9CA3AF; font-size: 14px; letter-spacing: -0.065px; margin: 0 0 10px 0;">
+                                지란지교패밀리 윤리경영 상담센터
+                            </p>
+                            <p style="color: #9CA3AF; font-size: 12px; letter-spacing: -0.06px; margin: 0;">
+                                본 메일은 발신 전용입니다.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+
+    // Send email
+    await transporter.sendMail({
+      from: `"지란지교패밀리 윤리경영 상담센터" <${smtpFrom}>`,
+      to: email,
+      subject: "지란지교패밀리 윤리경영 상담센터 비밀번호 재설정",
+      html: htmlContent,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Email sending error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
