@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
                             <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                 <tr>
                                     <td align="center">
-                                        <a href="https://cherish-jiran.vercel.app/result"
+                                        <a href="https://esg.jiran.com/result"
                                             style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 12px; font-size: 14px; font-weight: 700; letter-spacing: -0.08px;">
                                             제보 내역 조회하기
                                         </a>

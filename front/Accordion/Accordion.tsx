@@ -7,7 +7,7 @@ interface AccordionItem {
   display_order: number;
 }
 
-const API_URL = "https://cherish-jiran.vercel.app/api";
+const API_URL = "https://esg-admin.jiran.com/api";
 
 export default function Accordion() {
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
@@ -17,21 +17,18 @@ export default function Accordion() {
     // Next.js API에서 FAQs 조회
     const fetchFAQs = async () => {
       try {
-        console.log("[Accordion] FAQs 조회 중...");
         const response = await fetch(`${API_URL}/faqs`);
 
         if (!response.ok) {
-          console.error("[Accordion] FAQs 조회 실패:", response.status);
           return;
         }
 
         const result = await response.json();
         if (result.data) {
           setItems(result.data);
-          console.log("[Accordion] FAQs 조회 완료:", result.data.length, "개");
         }
       } catch (error) {
-        console.error("[Accordion] FAQs 조회 에러:", error);
+        // 에러 발생 시 기본 아이템 유지
       }
     };
 

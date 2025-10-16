@@ -43,8 +43,8 @@ export default function InquiryDetailPage({
     setSuccess("");
 
     try {
-      const res = await fetch(`/api/admin/inquiries/${id}`, {
-        method: "PATCH",
+      const res = await fetch(`/api/admin/inquiries/${id}/replies`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           replyTitle,
@@ -57,9 +57,16 @@ export default function InquiryDetailPage({
         throw new Error("답변 전송에 실패했습니다");
       }
 
-      setSuccess("답변이 성공적으로 전송되었습니다!");
+      const result = await res.json();
+
+      setSuccess(
+        result.emailSent
+          ? "답변이 성공적으로 전송되고 이메일이 발송되었습니다!"
+          : "답변이 전송되었습니다 (이메일 발송 실패)"
+      );
       setReplyTitle("");
       setReplyContent("");
+      setStatus("");
       mutate();
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다");
@@ -95,8 +102,8 @@ export default function InquiryDetailPage({
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card className="h-fit">
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
@@ -133,24 +140,45 @@ export default function InquiryDetailPage({
             </div>
           )}
 
-          {inquiry.reply_title && (
+          {inquiry.replies && inquiry.replies.length > 0 && (
             <div className="border-t pt-4">
-              <h3 className="font-semibold mb-2 text-primary">
-                현재 답변: {inquiry.reply_title}
-              </h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {inquiry.reply_content}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                답변일:{" "}
-                {new Date(inquiry.replied_at).toLocaleDateString("ko-KR")}
-              </p>
+              <h3 className="font-semibold mb-4">답변 내역 ({inquiry.replies.length})</h3>
+              <div className="space-y-3">
+                {inquiry.replies.map((reply: any) => (
+                  <div
+                    key={reply.id}
+                    className="border rounded-lg p-4 bg-muted/30">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-semibold text-primary flex-1">{reply.title}</h4>
+                        <Badge
+                          variant={
+                            reply.status === "completed"
+                              ? "default"
+                              : reply.status === "processing"
+                                ? "secondary"
+                                : "outline"
+                          }
+                          className="shrink-0">
+                          {statusText[reply.status as keyof typeof statusText]}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {reply.content}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(reply.created_at).toLocaleDateString("ko-KR")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="h-fit">
         <CardHeader>
           <CardTitle>답변 보내기</CardTitle>
           <CardDescription>제보에 답변을 작성해주세요.</CardDescription>

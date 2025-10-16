@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -120,8 +120,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create Supabase client
+    // Create Supabase clients
+    // Use regular client for AES key validation
     const supabase = await createClient();
+
+    // Use admin client for querying inquiries/replies (bypass RLS after auth verification)
+    const adminSupabase = createAdminClient();
 
     // Get and consume one-time key for request
     const { data: keyData, error: keyError } = await supabase
@@ -168,12 +172,26 @@ export async function POST(req: NextRequest) {
       await decryptAES(authCode.encrypted, keyData.key, authCode.iv)
     ).toUpperCase();
 
-    // Query inquiry
-    const { data, error } = await supabase
+    // Query inquiry with replies using admin client to bypass RLS
+    const { data, error } = await adminSupabase
       .from('inquiries')
-      .select(
-        'id, title, content, email, name, phone, status, created_at, reply_title, reply_content, replied_at'
-      )
+      .select(`
+        id,
+        title,
+        content,
+        email,
+        name,
+        phone,
+        status,
+        created_at,
+        replies:inquiry_replies(
+          id,
+          title,
+          content,
+          status,
+          created_at
+        )
+      `)
       .eq('email', decryptedEmail)
       .eq('auth_code', decryptedAuthCode)
       .single();
@@ -195,6 +213,11 @@ export async function POST(req: NextRequest) {
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
 
+    // Sort replies by creation date (oldest first for user view)
+    const replies = (data.replies || []).sort((a: any, b: any) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
     // Encrypt each field with response key
     const encryptedData = {
       id: data.id,
@@ -205,13 +228,15 @@ export async function POST(req: NextRequest) {
       phone: data.phone ? await encryptAES(data.phone, responseKey) : null,
       status: data.status,
       created_at: data.created_at,
-      reply_title: data.reply_title
-        ? await encryptAES(data.reply_title, responseKey)
-        : null,
-      reply_content: data.reply_content
-        ? await encryptAES(data.reply_content, responseKey)
-        : null,
-      replied_at: data.replied_at,
+      replies: await Promise.all(
+        replies.map(async (reply: any) => ({
+          id: reply.id,
+          title: await encryptAES(reply.title, responseKey),
+          content: await encryptAES(reply.content, responseKey),
+          status: reply.status,
+          created_at: reply.created_at,
+        }))
+      ),
     };
 
     // Return encrypted data with response key

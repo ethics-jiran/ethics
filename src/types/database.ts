@@ -41,81 +41,54 @@ export type Database = {
     Tables: {
       aes_keys: {
         Row: {
-          key_id: string
-          key: string
+          consumed: boolean | null
+          created_at: string | null
           expires_at: string
-          consumed: boolean
-          created_at: string
+          key: string
+          key_id: string
         }
         Insert: {
-          key_id: string
-          key: string
+          consumed?: boolean | null
+          created_at?: string | null
           expires_at: string
-          consumed?: boolean
-          created_at?: string
+          key: string
+          key_id: string
         }
         Update: {
-          key_id?: string
+          consumed?: boolean | null
+          created_at?: string | null
+          expires_at?: string
           key?: string
-          expires_at?: string
-          consumed?: boolean
-          created_at?: string
-        }
-        Relationships: []
-      }
-      password_reset_tokens: {
-        Row: {
-          id: string
-          email: string
-          token: string
-          expires_at: string
-          used: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          email: string
-          token: string
-          expires_at: string
-          used?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          token?: string
-          expires_at?: string
-          used?: boolean
-          created_at?: string
+          key_id?: string
         }
         Relationships: []
       }
       faqs: {
         Row: {
-          id: string
-          title: string
           content: string[] | null
-          display_order: number
-          is_active: boolean
           created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          title: string
           updated_at: string
         }
         Insert: {
-          id?: string
-          title: string
           content?: string[] | null
-          display_order?: number
-          is_active?: boolean
           created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          title: string
           updated_at?: string
         }
         Update: {
-          id?: string
-          title?: string
           content?: string[] | null
-          display_order?: number
-          is_active?: boolean
           created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -171,12 +144,117 @@ export type Database = {
         }
         Relationships: []
       }
+      inquiry_replies: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          inquiry_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          inquiry_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          inquiry_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_replies_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      password_reset_tokens: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          token: string
+          used: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          token: string
+          used?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
+      policy: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_expired_aes_keys: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      delete_expired_reset_tokens: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

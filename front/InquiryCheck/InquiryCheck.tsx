@@ -1,7 +1,12 @@
 import React, { useState, useEffect, FormEvent } from "react";
 
-// inquiry-encrypt 라이브러리는 전역 스크립트에서 로드해야 합니다
-// <script src="https://cherish-jiran.vercel.app/api/inquiry-encrypt"></script>
+interface Reply {
+  id: string;
+  title: string;
+  content: string;
+  status: "pending" | "processing" | "completed";
+  created_at: string;
+}
 
 interface InquiryData {
   id: string;
@@ -12,22 +17,20 @@ interface InquiryData {
   phone: string | null;
   status: "pending" | "processing" | "completed";
   created_at: string;
-  reply_title: string | null;
-  reply_content: string | null;
-  replied_at: string | null;
+  replies: Reply[];
 }
 
-const API_URL = "https://cherish-jiran.vercel.app/api";
+const API_URL = "https://esg-admin.jiran.com/api";
 
 // 상태 뱃지 정의
 const statusConfig = {
   pending: {
     text: "대기중",
-    className: "badge-blue",
+    className: "badge-white",
   },
   processing: {
     text: "처리중",
-    className: "badge-yellow",
+    className: "badge-blue",
   },
   completed: {
     text: "완료",
@@ -116,6 +119,12 @@ export default function InquiryCheck() {
         email.trim(),
         authCode.trim().toUpperCase()
       );
+
+      console.log("=== 조회 결과 ===", result);
+      console.log("답변 개수:", result.replies?.length || 0);
+      if (result.replies) {
+        console.log("답변 데이터:", result.replies);
+      }
 
       setInquiry(result);
     } catch (err) {
@@ -229,17 +238,42 @@ export default function InquiryCheck() {
           <hr className="divider" />
 
           {/* Reply Section */}
-          {inquiry.reply_title && inquiry.reply_content && (
+          {inquiry.replies && inquiry.replies.length > 0 && (
             <div className="text-wrapper">
-              <h4 className="title title-sm">{inquiry.reply_title}</h4>
-              <div className="text text-md pre-wrap">
-                {inquiry.reply_content}
-              </div>
-              {inquiry.replied_at && (
-                <p className="text text-sm">
-                  답변일: {formatDate(inquiry.replied_at)}
-                </p>
-              )}
+              <h4 className="title title-sm">
+                답변 내역 ({inquiry.replies.length})
+              </h4>
+              {inquiry.replies.map((reply, index) => (
+                <div
+                  key={reply.id}
+                  style={{ marginTop: index > 0 ? "24px" : "0" }}>
+                  {index > 0 && (
+                    <hr className="divider" style={{ margin: "24px 0" }} />
+                  )}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "12px",
+                      marginBottom: "8px",
+                    }}>
+                    <h5
+                      className="title title-sm"
+                      style={{ fontSize: "16px", margin: 0, flex: 1 }}>
+                      {reply.title}
+                    </h5>
+                    <span
+                      className={`badge ${getStatusConfig(reply.status).className}`}>
+                      {getStatusConfig(reply.status).text}
+                    </span>
+                  </div>
+                  <div className="text text-md pre-wrap">{reply.content}</div>
+                  <p className="text text-sm" style={{ marginTop: "8px" }}>
+                    답변일: {formatDate(reply.created_at)}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </div>

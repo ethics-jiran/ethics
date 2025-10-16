@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ClipboardList, Settings, HelpCircle } from "lucide-react";
+import { ClipboardList, Settings, HelpCircle, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -26,6 +26,11 @@ const navItems = [
     title: "FAQ 관리",
     url: "/admin/faqs",
     icon: HelpCircle,
+  },
+  {
+    title: "상담자 보호정책",
+    url: "/admin/policy",
+    icon: Shield,
   },
 ];
 

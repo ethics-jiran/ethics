@@ -90,10 +90,17 @@ export async function POST(req: NextRequest) {
                                 </tr>
                             </table>
 
-                            <p
-                                style="color: #6B7280; font-size: 14px; line-height: 1.45; letter-spacing: -0.05px; margin: 20px 0; text-align: center;">
-                                위 답변 내용에 대한 전체 내역을 확인하실 수 있습니다.
-                            </p>
+                            <!-- Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="https://esg.jiran.com/result"
+                                            style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 12px; font-size: 14px; font-weight: 700; letter-spacing: -0.08px;">
+                                            제보 내역 조회하기
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
 
                             <!-- Info Box -->
                             <table width="100%" cellpadding="0" cellspacing="0"
@@ -107,7 +114,6 @@ export async function POST(req: NextRequest) {
                                         <p
                                             style="color: #4B5563; font-size: 13px; line-height: 1.6; letter-spacing: -0.065px; margin: 0;">
                                             • 제보 ID: <strong>${inquiryId}</strong><br>
-                                            • 상태: <strong>답변 완료</strong><br>
                                             • 이메일과 인증 코드로 전체 내용을 확인하실 수 있습니다<br>
                                             • 추가 문의가 필요한 경우 새로운 제보를 등록해 주세요
                                         </p>
@@ -141,7 +147,7 @@ export async function POST(req: NextRequest) {
     await transporter.sendMail({
       from: `"지란지교패밀리 윤리경영 상담센터" <${smtpFrom}>`,
       to: email,
-      subject: `[답변 완료] ${replyTitle}`,
+      subject: `[답변] ${replyTitle}`,
       html: htmlContent,
     });
 

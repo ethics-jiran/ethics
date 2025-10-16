@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 const jsContent = `/**
  * Inquiry Encryption Library (AES-GCM)
@@ -6,7 +6,7 @@ const jsContent = `/**
  */
 
 class InquiryEncryptor {
-  constructor(apiUrl = 'https://cherish-jiran.vercel.app/api') {
+  constructor(apiUrl = 'https://esg-admin.jiran.com/api') {
     this.apiUrl = apiUrl;
   }
 
@@ -153,6 +153,17 @@ class InquiryEncryptor {
 
     const result = await response.json();
 
+    // 답변 배열 복호화
+    const decryptedReplies = result.data.replies ? await Promise.all(
+      result.data.replies.map(async (reply) => ({
+        id: reply.id,
+        title: await this.decryptText(reply.title.encrypted, result.aesKey, reply.title.iv),
+        content: await this.decryptText(reply.content.encrypted, result.aesKey, reply.content.iv),
+        status: reply.status,
+        created_at: reply.created_at,
+      }))
+    ) : [];
+
     // 응답 복호화
     const decryptedInquiry = {
       id: result.data.id,
@@ -163,9 +174,7 @@ class InquiryEncryptor {
       phone: result.data.phone ? await this.decryptText(result.data.phone.encrypted, result.aesKey, result.data.phone.iv) : null,
       status: result.data.status,
       created_at: result.data.created_at,
-      reply_title: result.data.reply_title ? await this.decryptText(result.data.reply_title.encrypted, result.aesKey, result.data.reply_title.iv) : null,
-      reply_content: result.data.reply_content ? await this.decryptText(result.data.reply_content.encrypted, result.aesKey, result.data.reply_content.iv) : null,
-      replied_at: result.data.replied_at,
+      replies: decryptedReplies,
     };
 
     return decryptedInquiry;
@@ -213,8 +222,8 @@ if (typeof window !== 'undefined') {
 export async function GET() {
   return new NextResponse(jsContent, {
     headers: {
-      'Content-Type': 'application/javascript; charset=utf-8',
-      'Cache-Control': 'public, max-age=0, must-revalidate',
+      "Content-Type": "application/javascript; charset=utf-8",
+      "Cache-Control": "public, max-age=0, must-revalidate",
     },
   });
 }

@@ -26,12 +26,30 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('inquiries')
-    .select('*')
+    .select(`
+      *,
+      replies:inquiry_replies(
+        id,
+        title,
+        content,
+        status,
+        created_at,
+        updated_at,
+        created_by
+      )
+    `)
     .eq('id', id)
     .single();
 
   if (error || !data) {
     return NextResponse.json({ error: 'Inquiry not found' }, { status: 404 });
+  }
+
+  // Sort replies by creation date (newest first)
+  if (data.replies) {
+    data.replies.sort((a: any, b: any) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
   }
 
   return NextResponse.json(data);
