@@ -5,17 +5,15 @@
       "args": [
         "-y",
         "@supabase/mcp-server-supabase@latest",
-        "--project-ref=domjuxvrnglsohyqdzmi"
+        "--project-ref=yzhxzbcsrszfbwrjecaj"
       ],
       "env": {
-        "SUPABASE_ACCESS_TOKEN": "sbp_8c426d885956f3648b42a5f6dc6fa82328c93b1b"
+        "SUPABASE_ACCESS_TOKEN": "sbp_01e01cd48ef8b038f210dbebff90b83c27240288"
       }
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": [
-        "chrome-devtools-mcp@latest"
-      ]
+      "args": ["chrome-devtools-mcp@latest"]
     },
     "context7": {
       "type": "stdio",
@@ -29,10 +27,7 @@
     },
     "shadcn": {
       "command": "npx",
-      "args": [
-        "shadcn@latest",
-        "mcp"
-      ]
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
