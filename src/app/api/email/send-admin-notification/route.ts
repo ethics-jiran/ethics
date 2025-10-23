@@ -3,7 +3,8 @@ import nodemailer from "nodemailer";
 
 export async function POST(req: NextRequest) {
   try {
-    const { adminEmail, inquiryId, title, name, email, phone, content } = await req.json();
+    const { adminEmail, inquiryId, title, name, email, phone, content } =
+      await req.json();
 
     // Validate required fields
     if (!adminEmail || !inquiryId || !title || !name || !email || !content) {
@@ -40,11 +41,12 @@ export async function POST(req: NextRequest) {
     });
 
     // Get base URL for the management link
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://esg.jiran.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://esg.jiran.com";
     const managementUrl = `${baseUrl}/admin/inquiries/${inquiryId}`;
 
     // Truncate content to 100 characters
-    const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+    const contentPreview =
+      content.length > 100 ? content.substring(0, 100) + "..." : content;
 
     const htmlContent = `<!DOCTYPE html>
 <html lang="ko">
@@ -99,7 +101,7 @@ export async function POST(req: NextRequest) {
                                             style="color: #4B5563; font-size: 13px; line-height: 1.6; letter-spacing: -0.065px; margin: 0;">
                                             • 이름: ${name}<br>
                                             • 이메일: ${email}<br>
-                                            ${phone ? `• 전화번호: ${phone}<br>` : ''}
+                                            ${phone ? `• 전화번호: ${phone}<br>` : ""}
                                         </p>
                                     </td>
                                 </tr>
@@ -115,7 +117,7 @@ export async function POST(req: NextRequest) {
                                             제보 내용 미리보기
                                         </p>
                                         <p
-                                            style="color: #4B5563; font-size: 13px; line-height: 1.6; letter-spacing: -0.065px; margin: 0; white-space: pre-wrap;">
+                                            style="color: #4B5563; font-size: 13px; line-height: 1.6; letter-spacing: -0.065px; margin: 0;">
                                             ${contentPreview}
                                         </p>
                                     </td>
