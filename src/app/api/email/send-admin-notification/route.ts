@@ -41,8 +41,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Get base URL for the management link
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://esg.jiran.com";
-    const managementUrl = `${baseUrl}/admin/inquiries/${inquiryId}`;
+    const baseUrl = "https://esg-admin.jiran.com";
 
     // Truncate content to 100 characters
     const contentPreview =
@@ -128,7 +127,7 @@ export async function POST(req: NextRequest) {
                             <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                 <tr>
                                     <td align="center">
-                                        <a href="${managementUrl}"
+                                        <a href="${baseUrl}"
                                             style="display: inline-block; background-color: #111827; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 12px; font-size: 14px; font-weight: 700; letter-spacing: -0.08px;">
                                             제보 상세보기 및 답변하기
                                         </a>
