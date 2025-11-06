@@ -100,7 +100,9 @@ export default function AdminsPage() {
               <thead className="bg-muted/50">
                 <tr>
                   <th className="text-left p-3 text-sm font-medium">이메일</th>
-                  <th className="text-left p-3 text-sm font-medium">수신 상태</th>
+                  <th className="text-left p-3 text-sm font-medium">
+                    수신 상태
+                  </th>
                   <th className="text-left p-3 text-sm font-medium">
                     오피스메일
                   </th>
@@ -187,8 +189,6 @@ export default function AdminsPage() {
 
         <div className="bg-muted/50 p-4 rounded-lg text-sm text-muted-foreground">
           <p className="font-medium mb-1">안내</p>
-          <p>• 전체 알림은 현재 수신 여부 인디케이터입니다</p>
-          <p>• 전체 알림이 꺼져 있으면(시스템/계정 정책) 채널 토글은 비활성화됩니다</p>
           <p>• 새로운 제보가 등록되면 활성화된 채널로 알림이 발송됩니다</p>
         </div>
       </CardContent>

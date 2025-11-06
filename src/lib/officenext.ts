@@ -1,13 +1,13 @@
 export type OfficenextMessagePayload = {
   to: string[];
-  content: string;
+  contents: string;
   important?: boolean;
 };
 
 export type OfficenextNotificationPayload = {
   to: string[];
   title: string;
-  content: string;
+  contents: string;
   important?: boolean;
 };
 
@@ -26,6 +26,15 @@ export async function sendOfficenextMessage(payload: OfficenextMessagePayload) {
         body: JSON.stringify(payload),
       }
     );
+    if (!res.ok) {
+      let body = "";
+      try {
+        body = await res.text();
+      } catch (_) {}
+      console.error(
+        `[Officenext][messages] Failed: status=${res.status} body=${body?.slice(0, 1000)}`
+      );
+    }
     return { ok: res.ok, status: res.status };
   } catch (e) {
     console.error("Officenext message send failed:", e);
@@ -50,10 +59,18 @@ export async function sendOfficenextNotification(
         body: JSON.stringify(payload),
       }
     );
+    if (!res.ok) {
+      let body = "";
+      try {
+        body = await res.text();
+      } catch (_) {}
+      console.error(
+        `[Officenext][notifications] Failed: status=${res.status} body=${body?.slice(0, 1000)}`
+      );
+    }
     return { ok: res.ok, status: res.status };
   } catch (e) {
     console.error("Officenext notification send failed:", e);
     return { ok: false, status: 0 };
   }
 }
-

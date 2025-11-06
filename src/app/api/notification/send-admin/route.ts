@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import {
   sendOfficenextMessage,
   sendOfficenextNotification,
@@ -18,8 +18,19 @@ export async function POST(req: NextRequest) {
       content,
     } = await req.json();
 
-    if (!adminId || !adminEmail || !inquiryId || !title || !name || !email || !content) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (
+      !adminId ||
+      !adminEmail ||
+      !inquiryId ||
+      !title ||
+      !name ||
+      !email ||
+      !content
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     // Defaults when no explicit settings exist
@@ -28,14 +39,19 @@ export async function POST(req: NextRequest) {
     let notify_message = false;
     let notify_notification = false;
 
-    // Try fetch admin_settings by user_id
+    // Try fetch admin_settings by user_id (use admin client to bypass RLS)
     try {
-      const supabase = await createClient();
-      const { data: settings } = await supabase
+      const adminClient = createAdminClient();
+      const { data: settings, error: settingsError } = await adminClient
         .from("admin_settings")
-        .select("receive_notifications, notify_email, notify_message, notify_notification")
+        .select(
+          "receive_notifications, notify_email, notify_message, notify_notification"
+        )
         .eq("user_id", adminId)
         .single();
+      if (settingsError) {
+        console.warn("admin_settings select error:", settingsError);
+      }
       if (settings) {
         receive_notifications = settings.receive_notifications ?? true;
         notify_email = settings.notify_email ?? true;
@@ -57,27 +73,45 @@ export async function POST(req: NextRequest) {
 
     // Build common values
     const adminSiteUrl =
-      process.env.ADMIN_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-    const contentPreview = content.length > 100 ? content.substring(0, 100) + "..." : content;
-    const summary = `제보 제목: ${title}\n제보자: ${name} <${email}>${phone ? ` (${phone})` : ""}\n내용: ${contentPreview}\n관리: ${adminSiteUrl}`;
+      process.env.ADMIN_SITE_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "http://localhost:3000";
+    // Officenext: message supports HTML (<br>), notification prefers plain text with \n\n
+    const messageContents =
+      `📩 지란지교패밀리 윤리경영 상담관리센터에 새로운 제보가 접수되었습니다.` +
+      `<br><br>🔗 제보 내용 확인하기: <a href="${adminSiteUrl}">${adminSiteUrl}</a>`;
+    const notificationContents = `📩 지란지교패밀리 윤리경영 상담관리센터에 새로운 제보가 접수되었습니다.\n\n🔗 제보 내용 확인하기: ${adminSiteUrl}`;
 
     // Prepare tasks by channel
     const tasks: Promise<any>[] = [];
 
     if (notify_email) {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      const baseUrl =
+        process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
       tasks.push(
         fetch(`${baseUrl}/api/email/send-admin-notification`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ adminEmail, inquiryId, title, name, email, phone, content }),
+          body: JSON.stringify({
+            adminEmail,
+            inquiryId,
+            title,
+            name,
+            email,
+            phone,
+            content,
+          }),
         })
       );
     }
 
     if (notify_message) {
       tasks.push(
-        sendOfficenextMessage({ to: [adminEmail], content: summary, important: true })
+        sendOfficenextMessage({
+          to: [adminEmail],
+          contents: messageContents,
+          important: true,
+        })
       );
     }
 
@@ -86,7 +120,7 @@ export async function POST(req: NextRequest) {
         sendOfficenextNotification({
           to: [adminEmail],
           title: `[새 제보] ${title}`,
-          content: summary,
+          contents: notificationContents,
           important: true,
         })
       );
@@ -97,7 +131,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, results });
   } catch (error) {
     console.error("Notification dispatch error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
-
