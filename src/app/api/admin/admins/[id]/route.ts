@@ -21,12 +21,32 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { receive_notifications } = body;
+    const {
+      receive_notifications,
+      notify_email,
+      notify_message,
+      notify_notification,
+    } = body;
 
-    // Validate that receive_notifications is provided
-    if (receive_notifications === undefined) {
+    // Build partial update object with only provided fields
+    const updatePayload: Record<string, boolean> = {};
+    if (typeof receive_notifications === 'boolean') {
+      updatePayload.receive_notifications = receive_notifications;
+    }
+    if (typeof notify_email === 'boolean') {
+      updatePayload.notify_email = notify_email;
+    }
+    if (typeof notify_message === 'boolean') {
+      updatePayload.notify_message = notify_message;
+    }
+    if (typeof notify_notification === 'boolean') {
+      updatePayload.notify_notification = notify_notification;
+    }
+
+    // Require at least one updatable field
+    if (Object.keys(updatePayload).length === 0) {
       return NextResponse.json(
-        { error: 'receive_notifications is required' },
+        { error: 'At least one of receive_notifications, notify_email, notify_message, notify_notification is required' },
         { status: 400 }
       );
     }
@@ -45,7 +65,7 @@ export async function PATCH(
       // Update existing settings
       const result = await supabase
         .from('admin_settings')
-        .update({ receive_notifications })
+        .update(updatePayload)
         .eq('user_id', user_id)
         .select()
         .single();
@@ -56,7 +76,7 @@ export async function PATCH(
       // Create new settings
       const result = await supabase
         .from('admin_settings')
-        .insert({ user_id, receive_notifications })
+        .insert({ user_id, ...updatePayload })
         .select()
         .single();
 

@@ -3,7 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ClipboardList, Settings, HelpCircle, Shield, Users } from "lucide-react";
+import {
+  ClipboardList,
+  Settings,
+  HelpCircle,
+  Shield,
+  Users,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -63,9 +69,9 @@ export function AdminSidebar({
                 <Image
                   src="/logo.svg"
                   alt="Logo"
-                  width={48}
-                  height={48}
-                  className="!size-10"
+                  width={60}
+                  height={60}
+                  className="!size-12"
                 />
                 <div>
                   <p className="font-semibold">지란지교패밀리</p>

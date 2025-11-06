@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import useSWR from "swr";
@@ -18,6 +19,9 @@ interface Admin {
   id: string;
   email: string;
   receive_notifications: boolean;
+  notify_email: boolean;
+  notify_message: boolean;
+  notify_notification: boolean;
   created_at: string;
   settings_id: string | null;
 }
@@ -35,14 +39,16 @@ export default function AdminsPage() {
     mutate,
   } = useSWR(`/api/admin/admins?${queryParams}`, fetcher);
 
-  const handleToggleNotifications = async (admin: Admin) => {
+  const handleToggleChannel = async (
+    admin: Admin,
+    field: "notify_email" | "notify_message" | "notify_notification"
+  ) => {
     try {
+      const nextValue = !admin[field];
       const response = await fetch(`/api/admin/admins/${admin.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          receive_notifications: !admin.receive_notifications,
-        }),
+        body: JSON.stringify({ [field]: nextValue }),
       });
 
       if (!response.ok) {
@@ -94,8 +100,15 @@ export default function AdminsPage() {
               <thead className="bg-muted/50">
                 <tr>
                   <th className="text-left p-3 text-sm font-medium">이메일</th>
+                  <th className="text-left p-3 text-sm font-medium">수신 상태</th>
                   <th className="text-left p-3 text-sm font-medium">
-                    이메일 알림 수신
+                    오피스메일
+                  </th>
+                  <th className="text-left p-3 text-sm font-medium">
+                    오피스넥스트 메시지
+                  </th>
+                  <th className="text-left p-3 text-sm font-medium">
+                    오피스넥스트 알림
                   </th>
                   <th className="text-left p-3 text-sm font-medium">가입일</th>
                 </tr>
@@ -107,15 +120,54 @@ export default function AdminsPage() {
                     className="border-t hover:bg-muted/30 transition">
                     <td className="p-3 text-sm">{admin.email}</td>
                     <td className="p-3">
+                      {admin.receive_notifications &&
+                      (admin.notify_email ||
+                        admin.notify_message ||
+                        admin.notify_notification) ? (
+                        <Badge variant="default">수신 중</Badge>
+                      ) : (
+                        <Badge variant="outline">미수신</Badge>
+                      )}
+                    </td>
+                    <td className="p-3">
                       <div className="flex items-center gap-2">
                         <Switch
-                          checked={admin.receive_notifications}
+                          checked={admin.notify_email}
+                          disabled={!admin.receive_notifications}
                           onCheckedChange={() =>
-                            handleToggleNotifications(admin)
+                            handleToggleChannel(admin, "notify_email")
                           }
                         />
                         <span className="text-sm text-muted-foreground">
-                          {admin.receive_notifications ? "수신" : "미수신"}
+                          {admin.notify_email ? "On" : "Off"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={admin.notify_message}
+                          disabled={!admin.receive_notifications}
+                          onCheckedChange={() =>
+                            handleToggleChannel(admin, "notify_message")
+                          }
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {admin.notify_message ? "On" : "Off"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={admin.notify_notification}
+                          disabled={!admin.receive_notifications}
+                          onCheckedChange={() =>
+                            handleToggleChannel(admin, "notify_notification")
+                          }
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {admin.notify_notification ? "On" : "Off"}
                         </span>
                       </div>
                     </td>
@@ -135,11 +187,9 @@ export default function AdminsPage() {
 
         <div className="bg-muted/50 p-4 rounded-lg text-sm text-muted-foreground">
           <p className="font-medium mb-1">안내</p>
-          <p>• 이메일 알림 수신 설정만 여기서 변경할 수 있습니다</p>
-          <p>
-            • 새로운 제보가 등록되면 알림 수신이 활성화된 관리자에게 이메일이
-            발송됩니다
-          </p>
+          <p>• 전체 알림은 현재 수신 여부 인디케이터입니다</p>
+          <p>• 전체 알림이 꺼져 있으면(시스템/계정 정책) 채널 토글은 비활성화됩니다</p>
+          <p>• 새로운 제보가 등록되면 활성화된 채널로 알림이 발송됩니다</p>
         </div>
       </CardContent>
     </Card>

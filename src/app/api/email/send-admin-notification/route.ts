@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Get base URL for the management link
-    const baseUrl = "https://esg-admin.jiran.com";
+    const baseUrl =
+      process.env.ADMIN_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
     // Truncate content to 100 characters
     const contentPreview =

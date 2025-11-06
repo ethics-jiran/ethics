@@ -216,14 +216,15 @@ export async function POST(req: NextRequest) {
           return !hasSettings || notificationUserIds.has(user.id);
         });
 
-        // Send notification to each admin
+        // Send notification to each admin via aggregator (email/message/notification)
         const notificationPromises = adminsToNotify.map((admin) =>
-          fetch(`${baseUrl}/api/email/send-admin-notification`, {
+          fetch(`${baseUrl}/api/notification/send-admin`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+              adminId: admin.id,
               adminEmail: admin.email,
               inquiryId: inquiry.id,
               title: decryptedTitle,

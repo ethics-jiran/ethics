@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get admin settings
+    // Get admin settings (includes channel toggles)
     const { data: settings, error: settingsError } = await supabase
       .from('admin_settings')
       .select('*');
@@ -58,7 +58,12 @@ export async function GET(request: NextRequest) {
         id: authUser.id,
         email: authUser.email || '',
         created_at: authUser.created_at,
+        // master switch: default true when no settings
         receive_notifications: userSettings?.receive_notifications ?? true,
+        // channel toggles: default email=true, others=false when no settings
+        notify_email: userSettings?.notify_email ?? true,
+        notify_message: userSettings?.notify_message ?? false,
+        notify_notification: userSettings?.notify_notification ?? false,
         settings_id: userSettings?.id || null,
       };
     });
@@ -104,7 +109,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { user_id, receive_notifications = true } = body;
+    const {
+      user_id,
+      receive_notifications = true,
+      notify_email = true,
+      notify_message = false,
+      notify_notification = false,
+    } = body;
 
     // Validate required fields
     if (!user_id) {
@@ -134,6 +145,9 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id,
         receive_notifications,
+        notify_email,
+        notify_message,
+        notify_notification,
       })
       .select()
       .single();
