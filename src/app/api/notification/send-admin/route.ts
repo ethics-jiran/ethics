@@ -7,26 +7,9 @@ import {
 
 export async function POST(req: NextRequest) {
   try {
-    const {
-      adminId,
-      adminEmail,
-      inquiryId,
-      title,
-      name,
-      email,
-      phone,
-      content,
-    } = await req.json();
+    const { adminId, adminEmail, inquiryId } = await req.json();
 
-    if (
-      !adminId ||
-      !adminEmail ||
-      !inquiryId ||
-      !title ||
-      !name ||
-      !email ||
-      !content
-    ) {
+    if (!adminId || !adminEmail || !inquiryId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -92,15 +75,7 @@ export async function POST(req: NextRequest) {
         fetch(`${baseUrl}/api/email/send-admin-notification`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            adminEmail,
-            inquiryId,
-            title,
-            name,
-            email,
-            phone,
-            content,
-          }),
+          body: JSON.stringify({ adminEmail }),
         })
       );
     }
@@ -119,7 +94,7 @@ export async function POST(req: NextRequest) {
       tasks.push(
         sendOfficenextNotification({
           to: [adminEmail],
-          title: `[새 제보] ${title}`,
+          title: `[새 제보] 지란지교패밀리 윤리경영 상담센터에 새로운 제보가 접수되었습니다.`,
           contents: notificationContents,
           important: true,
         })
@@ -127,6 +102,21 @@ export async function POST(req: NextRequest) {
     }
 
     const results = await Promise.allSettled(tasks);
+    const fulfilled = results.filter((r) => r.status === 'fulfilled') as PromiseFulfilledResult<Response>[];
+    const okCount = fulfilled.filter((r) => (r.value as any)?.ok !== false).length; // fetch Response or undefined
+    const rejected = results.length - fulfilled.length;
+    console.log('[Notify][admin]', {
+      adminId,
+      adminEmail,
+      channels: {
+        email: notify_email,
+        message: notify_message,
+        notification: notify_notification,
+      },
+      tasks: results.length,
+      ok: okCount,
+      rejected,
+    });
 
     return NextResponse.json({ success: true, results });
   } catch (error) {

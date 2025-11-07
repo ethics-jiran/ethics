@@ -171,89 +171,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Send email notification to submitter (call internal API)
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-      await fetch(`${baseUrl}/api/email/send-auth-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: decryptedEmail,
-          authCode: inquiry.auth_code,
-          inquiryId: inquiry.id,
-        }),
-      });
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-      // Continue even if email fails
-    }
-
-    // Send notification to admins
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
-      // Get all auth users using admin client
-      const adminClient = createAdminClient();
-      const { data: { users }, error: usersError } = await adminClient.auth.admin.listUsers();
-
-      if (!usersError && users && users.length > 0) {
-        // Get admin settings
-        const { data: settings } = await supabase
-          .from('admin_settings')
-          .select('*')
-          .eq('receive_notifications', true);
-
-        // Create set of user_ids who want notifications
-        const notificationUserIds = new Set(
-          settings?.map(s => s.user_id) || []
-        );
-
-        // Filter users who want notifications (or users without settings - default to true)
-        const adminsToNotify = users.filter(user => {
-          const hasSettings = settings?.some(s => s.user_id === user.id);
-          return !hasSettings || notificationUserIds.has(user.id);
-        });
-
-        // Send notification to each admin via aggregator (email/message/notification)
-        const notificationPromises = adminsToNotify.map((admin) =>
-          fetch(`${baseUrl}/api/notification/send-admin`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              adminId: admin.id,
-              adminEmail: admin.email,
-              inquiryId: inquiry.id,
-              title: decryptedTitle,
-              name: decryptedName,
-              email: decryptedEmail,
-              phone: decryptedPhone,
-              content: decryptedContent,
-            }),
-          })
-        );
-
-        // Send all notifications in parallel
-        await Promise.allSettled(notificationPromises);
-      }
-    } catch (adminEmailError) {
-      console.error('Admin email notification failed:', adminEmailError);
-      // Continue even if admin notification fails
-    }
-
-    return NextResponse.json(
+    // Fast response: DB insert only (200)
+    // Enqueue outbox jobs then return immediately
+    await supabase.from('notification_outbox').insert([
       {
-        id: inquiry.id,
-        message:
-          'Inquiry submitted successfully. Check your email for verification code.',
+        type: 'submit_user_email',
+        payload: {
+          inquiry_id: inquiry.id,
+          email: decryptedEmail,
+          auth_code: inquiry.auth_code,
+        },
       },
       {
-        status: 201,
-        headers: corsHeaders,
-      }
+        type: 'submit_admin_notify',
+        payload: {
+          inquiry_id: inquiry.id,
+        },
+      },
+    ]);
+
+    return NextResponse.json(
+      { id: inquiry.id },
+      { status: 200, headers: corsHeaders }
     );
   } catch (err) {
     console.error('Error:', err);

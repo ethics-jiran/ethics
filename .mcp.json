@@ -1,5 +1,13 @@
 {
   "mcpServers": {
+    "sitebuilder": {
+      "type": "http",
+      "url": "https://asia-northeast3-sunbisites.cloudfunctions.net/mcp_code_server",
+      "headers": {
+        "Authorization": "Bearer sbmcp_ccd71b0dd34c1df024da2983580de5ce91bda5fb58c8e9afeec6653286c3d8d8",
+        "X-Site-Id": "b55f167418bf439e86b7"
+      }
+    },
     "supabase": {
       "command": "npx",
       "args": [

@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      notification_outbox: {
+        Row: {
+          id: string
+          type: string
+          payload: Json
+          status: string
+          attempts: number
+          next_attempt_at: string
+          last_error: string | null
+          locked_at: string | null
+          locked_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          type: string
+          payload: Json
+          status?: string
+          attempts?: number
+          next_attempt_at?: string
+          last_error?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          type?: string
+          payload?: Json
+          status?: string
+          attempts?: number
+          next_attempt_at?: string
+          last_error?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_settings: {
         Row: {
           created_at: string

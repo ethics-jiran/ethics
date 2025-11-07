@@ -3,11 +3,10 @@ import nodemailer from "nodemailer";
 
 export async function POST(req: NextRequest) {
   try {
-    const { adminEmail, inquiryId, title, name, email, phone, content } =
-      await req.json();
+    const { adminEmail } = await req.json();
 
     // Validate required fields
-    if (!adminEmail || !inquiryId || !title || !name || !email || !content) {
+    if (!adminEmail) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -42,11 +41,9 @@ export async function POST(req: NextRequest) {
 
     // Get base URL for the management link
     const baseUrl =
-      process.env.ADMIN_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-    // Truncate content to 100 characters
-    const contentPreview =
-      content.length > 100 ? content.substring(0, 100) + "..." : content;
+      process.env.ADMIN_SITE_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "http://localhost:3000";
 
     const htmlContent = `<!DOCTYPE html>
 <html lang="ko">
@@ -81,49 +78,6 @@ export async function POST(req: NextRequest) {
                                 지란지교패밀리 윤리경영 상담센터에 새로운 제보가 접수되었습니다.
                             </p>
 
-                            <!-- Inquiry Info Box -->
-                            <table width="100%" cellpadding="0" cellspacing="0"
-                                style="background-color: #ffffff; border-radius: 12px; border: 1px solid #FF8A20; margin: 30px 0;">
-                                <tr>
-                                    <td style="padding: 28px;">
-                                        <p
-                                            style="color: #111827; font-size: 14px; letter-spacing: -0.05px; margin: 0 0 10px 0; font-weight: 700;">
-                                            제보 제목</p>
-                                        <p
-                                            style="color: #374151; font-size: 16px; font-weight: 600; margin: 0 0 20px 0;">
-                                            ${title}
-                                        </p>
-
-                                        <p
-                                            style="color: #111827; font-size: 14px; letter-spacing: -0.05px; margin: 0 0 10px 0; font-weight: 700;">
-                                            제보자 정보</p>
-                                        <p
-                                            style="color: #4B5563; font-size: 13px; line-height: 1.6; letter-spacing: -0.065px; margin: 0;">
-                                            • 이름: ${name}<br>
-                                            • 이메일: ${email}<br>
-                                            ${phone ? `• 전화번호: ${phone}<br>` : ""}
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <!-- Content Preview Box -->
-                            <table width="100%" cellpadding="0" cellspacing="0"
-                                style="border-left: 4px solid #FF8A20; background-color: #ff8c200d; border-radius: 8px; margin: 30px 0;">
-                                <tr>
-                                    <td style="padding: 20px;">
-                                        <p
-                                            style="color: #111827; font-size: 14px; letter-spacing: -0.05px; margin: 0 0 10px 0; font-weight: 700;">
-                                            제보 내용 미리보기
-                                        </p>
-                                        <p
-                                            style="color: #4B5563; font-size: 13px; line-height: 1.6; letter-spacing: -0.065px; margin: 0;">
-                                            ${contentPreview}
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-
                             <!-- Button -->
                             <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                 <tr>
@@ -136,19 +90,6 @@ export async function POST(req: NextRequest) {
                                 </tr>
                             </table>
 
-                            <!-- Info Box -->
-                            <table width="100%" cellpadding="0" cellspacing="0"
-                                style="background-color: #f8f9fa; border-radius: 8px; margin: 30px 0;">
-                                <tr>
-                                    <td style="padding: 20px;">
-                                        <p
-                                            style="color: #6B7280; font-size: 13px; line-height: 1.6; letter-spacing: -0.065px; margin: 0;">
-                                            • 제보 ID: <strong>${inquiryId}</strong><br>
-                                            • 위 버튼을 클릭하시면 관리 페이지에서 제보 전체 내용을 확인하고 답변하실 수 있습니다
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
                         </td>
                     </tr>
 
@@ -173,12 +114,23 @@ export async function POST(req: NextRequest) {
 </html>`;
 
     // Send email
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"지란지교패밀리 윤리경영 상담센터" <${smtpFrom}>`,
       to: adminEmail,
-      subject: `[새 제보] ${title}`,
+      subject: `[새 제보] 지란지교패밀리 윤리경영 상담센터에 새로운 제보가 접수되었습니다.`,
       html: htmlContent,
     });
+    try {
+      // Nodemailer response insight
+      console.log(
+        "[Email][admin-notify] messageId=",
+        (info as any)?.messageId,
+        "accepted=",
+        (info as any)?.accepted,
+        "rejected=",
+        (info as any)?.rejected
+      );
+    } catch (_) {}
 
     return NextResponse.json({ success: true });
   } catch (error) {
