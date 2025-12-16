@@ -170,22 +170,22 @@ export async function POST(req: NextRequest) {
       ? await decryptAES(phone.encrypted, keyData.key, phone.iv)
       : null;
 
-    // Generate auth code
+    // Generate auth code and ID
     const authCode = generateAuthCode();
+    const inquiryId = crypto.randomUUID();
 
-    // Insert inquiry
-    const { data: inquiry, error: insertError } = await supabase
+    // Insert inquiry (without .select() to avoid RLS SELECT check)
+    const { error: insertError } = await supabase
       .from('inquiries')
       .insert({
+        id: inquiryId,
         title: decryptedTitle,
         content: decryptedContent,
         email: decryptedEmail,
         name: decryptedName,
         phone: decryptedPhone,
         auth_code: authCode,
-      })
-      .select('id, auth_code')
-      .single();
+      });
 
     if (insertError) {
       console.error('Insert error:', insertError);
@@ -204,21 +204,21 @@ export async function POST(req: NextRequest) {
       {
         type: 'submit_user_email',
         payload: {
-          inquiry_id: inquiry.id,
+          inquiry_id: inquiryId,
           email: decryptedEmail,
-          auth_code: inquiry.auth_code,
+          auth_code: authCode,
         },
       },
       {
         type: 'submit_admin_notify',
         payload: {
-          inquiry_id: inquiry.id,
+          inquiry_id: inquiryId,
         },
       },
     ]);
 
     return NextResponse.json(
-      { id: inquiry.id },
+      { id: inquiryId },
       { status: 200, headers: corsHeaders }
     );
   } catch (err) {
