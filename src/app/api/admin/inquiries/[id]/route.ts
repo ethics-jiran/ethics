@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendReplySchema, updateStatusSchema } from '@/lib/validations/inquiry';
 import { ZodError } from 'zod';
+import { verifyAdmin } from '@/lib/auth/verify-admin';
 
 export async function GET(
   request: NextRequest,
@@ -10,19 +11,11 @@ export async function GET(
   const { id } = await params;
   const supabase = await createClient();
 
-  // Check auth
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Check auth + MFA (AAL2)
+  const authResult = await verifyAdmin(supabase);
+  if (!authResult.success) {
+    return authResult.response;
   }
-
-  // Note: MFA is enforced by RLS RESTRICTIVE policy
-  // RLS checks: auth.jwt() ->> 'aal' = 'aal2'
-  // If user doesn't have AAL2, RLS will block data access
 
   const { data, error } = await supabase
     .from('inquiries')
@@ -62,19 +55,11 @@ export async function PATCH(
   const { id } = await params;
   const supabase = await createClient();
 
-  // Check auth
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Check auth + MFA (AAL2)
+  const authResult = await verifyAdmin(supabase);
+  if (!authResult.success) {
+    return authResult.response;
   }
-
-  // Note: MFA is enforced by RLS RESTRICTIVE policy
-  // RLS checks: auth.jwt() ->> 'aal' = 'aal2'
-  // If user doesn't have AAL2, RLS will block data access
 
   try {
     const body = await request.json();
@@ -89,7 +74,7 @@ export async function PATCH(
         reply_title: validated.replyTitle,
         reply_content: validated.replyContent,
         replied_at: new Date().toISOString(),
-        replied_by: user.id,
+        replied_by: authResult.userId,
       };
       if (validated.status) {
         updateData.status = validated.status;

@@ -1,14 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 
 export function LogoutButton() {
   const router = useRouter();
-  const supabase = createClient();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    // 서버 API를 통해 로그아웃 (쿠키 완전 삭제)
+    await fetch('/api/auth/signout', { method: 'POST' });
     router.push('/login');
     router.refresh();
   };

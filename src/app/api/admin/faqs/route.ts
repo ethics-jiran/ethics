@@ -1,15 +1,16 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdmin } from '@/lib/auth/verify-admin';
 
 // GET - Fetch all FAQs (admin)
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check auth + MFA (AAL2)
+    const authResult = await verifyAdmin(supabase);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { data, error } = await supabase
@@ -34,10 +35,10 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check auth + MFA (AAL2)
+    const authResult = await verifyAdmin(supabase);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const body = await request.json();

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { verifyAdmin } from '@/lib/auth/verify-admin';
 
 // Update notification settings for a user
 export async function PATCH(
@@ -9,14 +10,10 @@ export async function PATCH(
   const supabase = await createClient();
   const { id: user_id } = await params;
 
-  // Check auth
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Check auth + MFA (AAL2)
+  const authResult = await verifyAdmin(supabase);
+  if (!authResult.success) {
+    return authResult.response;
   }
 
   try {

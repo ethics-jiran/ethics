@@ -5,19 +5,23 @@ const BATCH_SIZE = Number(process.env.OUTBOX_BATCH_SIZE || 25);
 const CRON_SECRET = process.env.CRON_SECRET;
 
 async function handle(req: NextRequest) {
+  // CRON_SECRET must be configured in production
+  if (!CRON_SECRET) {
+    console.error('[Outbox] CRON_SECRET not configured');
+    return NextResponse.json({ error: 'Cron secret not configured' }, { status: 500 });
+  }
+
   // Cron auth per Vercel docs: Authorization: Bearer <CRON_SECRET>
-  if (CRON_SECRET) {
-    const url = new URL(req.url);
-    const qsToken = url.searchParams.get('token');
-    const auth = req.headers.get('authorization');
-    const bearerOk = auth && auth.trim().toLowerCase().startsWith('bearer ')
-      ? auth.trim().slice(7) === CRON_SECRET
-      : false;
-    const legacyKey = req.headers.get('x-cron-key');
-    const tokenOk = qsToken === CRON_SECRET;
-    if (!bearerOk && legacyKey !== CRON_SECRET && !tokenOk) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const url = new URL(req.url);
+  const qsToken = url.searchParams.get('token');
+  const auth = req.headers.get('authorization');
+  const bearerOk = auth && auth.trim().toLowerCase().startsWith('bearer ')
+    ? auth.trim().slice(7) === CRON_SECRET
+    : false;
+  const legacyKey = req.headers.get('x-cron-key');
+  const tokenOk = qsToken === CRON_SECRET;
+  if (!bearerOk && legacyKey !== CRON_SECRET && !tokenOk) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const supabase = await createClient();

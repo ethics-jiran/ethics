@@ -2,8 +2,8 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -17,16 +17,54 @@ import {
   InputOTPSeparator,
 } from "@/components/ui/input-otp";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [totpCode, setTotpCode] = useState("");
   const [factorId, setFactorId] = useState("");
   const [challengeId, setChallengeId] = useState("");
-  const [step, setStep] = useState<"credentials" | "mfa">("credentials");
+  const [step, setStep] = useState<"credentials" | "mfa" | "loading">("loading");
   const [error, setError] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  // mfa_required 파라미터 확인 및 세션 체크
+  useEffect(() => {
+    const checkSession = async () => {
+      const mfaRequired = searchParams.get("mfa_required") === "true";
+
+      if (mfaRequired) {
+        // 이미 로그인된 상태에서 MFA만 필요한 경우
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session) {
+          // MFA factor 가져와서 바로 인증 화면으로
+          const { data: factors } = await supabase.auth.mfa.listFactors();
+
+          if (factors?.totp && factors.totp.length > 0) {
+            const factor = factors.totp[0];
+            setFactorId(factor.id);
+
+            const { data: challenge } = await supabase.auth.mfa.challenge({
+              factorId: factor.id,
+            });
+
+            if (challenge) {
+              setChallengeId(challenge.id);
+              setStep("mfa");
+              return;
+            }
+          }
+        }
+      }
+
+      // 기본 로그인 화면
+      setStep("credentials");
+    };
+
+    checkSession();
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +122,14 @@ export default function LoginPage() {
       setError(err.message || "Invalid code");
     }
   };
+
+  if (step === "loading") {
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+        <div className="text-muted-foreground">로딩 중...</div>
+      </div>
+    );
+  }
 
   if (step === "mfa") {
     return (
@@ -191,5 +237,21 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+      <div className="text-muted-foreground">로딩 중...</div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdmin } from '@/lib/auth/verify-admin';
 
 // PUT - Update FAQ
 export async function PUT(
@@ -9,10 +10,10 @@ export async function PUT(
   try {
     const supabase = await createClient();
 
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check auth + MFA (AAL2)
+    const authResult = await verifyAdmin(supabase);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = await params;
@@ -52,10 +53,10 @@ export async function DELETE(
   try {
     const supabase = await createClient();
 
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check auth + MFA (AAL2)
+    const authResult = await verifyAdmin(supabase);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     const { id } = await params;

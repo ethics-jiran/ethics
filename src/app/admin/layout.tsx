@@ -18,6 +18,23 @@ export default async function AdminLayout({
     redirect('/login');
   }
 
+  // AAL2 (MFA) 검증 - 이중 보안
+  const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+  if (mfaData) {
+    const { currentLevel, nextLevel } = mfaData;
+
+    if (currentLevel === 'aal1' && nextLevel === 'aal2') {
+      // MFA 설정됨, 인증 필요
+      redirect('/login?mfa_required=true');
+    }
+
+    if (currentLevel === 'aal1' && nextLevel === 'aal1') {
+      // MFA 설정 안됨
+      redirect('/setup-mfa');
+    }
+  }
+
   return (
     <SidebarProvider>
       <AdminSidebar variant="inset" userEmail={user.email || ''} />

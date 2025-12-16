@@ -42,16 +42,37 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect admin routes and setup-mfa
-  const protectedPaths = ['/admin', '/setup-mfa'];
-  const isProtectedPath = protectedPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  );
+  // Protect admin routes
+  const isAdminPath = request.nextUrl.pathname.startsWith('/admin');
+  const isSetupMfaPath = request.nextUrl.pathname.startsWith('/setup-mfa');
 
-  if (isProtectedPath && !user) {
+  // 로그인 안 되어 있으면 로그인 페이지로
+  if ((isAdminPath || isSetupMfaPath) && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
+  }
+
+  // MFA 체크 (admin 페이지 접근 시)
+  if (isAdminPath && user) {
+    const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+    if (mfaData) {
+      // MFA가 설정되어 있지만 아직 인증 안 됨 (aal1 상태)
+      if (mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal2') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/login';
+        url.searchParams.set('mfa_required', 'true');
+        return NextResponse.redirect(url);
+      }
+
+      // MFA가 아예 설정 안 됨
+      if (mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal1') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/setup-mfa';
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
   return supabaseResponse;

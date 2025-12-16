@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
+import { verifyAdmin } from '@/lib/auth/verify-admin';
 
 const updatePolicySchema = z.object({
   title: z.string().min(1).max(200),
@@ -15,14 +16,10 @@ export async function PUT(
     const { id } = await params;
     const supabase = await createClient();
 
-    // Verify admin authentication
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check auth + MFA (AAL2)
+    const authResult = await verifyAdmin(supabase);
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     // Parse and validate request body
@@ -35,7 +32,7 @@ export async function PUT(
       .update({
         title: validated.title,
         content: validated.content,
-        updated_by: user.id,
+        updated_by: authResult.userId,
       })
       .eq('id', id)
       .select()
