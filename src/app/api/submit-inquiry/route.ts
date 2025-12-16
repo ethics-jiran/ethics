@@ -88,7 +88,22 @@ export async function POST(req: NextRequest) {
     }
 
     // Use admin client to bypass RLS for anonymous inquiry submission
-    const supabase = createAdminClient();
+    let supabase;
+    try {
+      supabase = createAdminClient();
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      console.log('Service role key exists:', !!serviceKey);
+      console.log('Service role key prefix:', serviceKey?.substring(0, 20) + '...');
+    } catch (envError) {
+      console.error('Admin client creation failed:', envError);
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        {
+          status: 500,
+          headers: corsHeaders,
+        }
+      );
+    }
 
     // Get and consume one-time key
     const { data: keyData, error: keyError } = await supabase
@@ -97,7 +112,19 @@ export async function POST(req: NextRequest) {
       .eq('key_id', keyId)
       .single();
 
-    if (keyError || !keyData) {
+    if (keyError) {
+      console.error('Key fetch error:', keyError);
+      return NextResponse.json(
+        { error: 'Invalid or expired encryption key' },
+        {
+          status: 400,
+          headers: corsHeaders,
+        }
+      );
+    }
+
+    if (!keyData) {
+      console.error('Key not found for keyId:', keyId);
       return NextResponse.json(
         { error: 'Invalid or expired encryption key' },
         {
