@@ -113,7 +113,32 @@ function LoginForm() {
         code: totpCode,
       });
 
-      if (error) throw error;
+      if (error) {
+        // IP mismatch 에러인 경우 새 challenge 생성 후 재시도
+        if (error.message?.includes('IP') || error.code === 'mfa_ip_address_mismatch') {
+          const { data: newChallenge } = await supabase.auth.mfa.challenge({
+            factorId,
+          });
+
+          if (newChallenge) {
+            setChallengeId(newChallenge.id);
+            // 같은 코드로 재시도
+            const { error: retryError } = await supabase.auth.mfa.verify({
+              factorId,
+              challengeId: newChallenge.id,
+              code: totpCode,
+            });
+
+            if (retryError) throw retryError;
+
+            // 재시도 성공
+            router.push("/admin/inquiries");
+            router.refresh();
+            return;
+          }
+        }
+        throw error;
+      }
 
       // Redirect to admin panel
       router.push("/admin/inquiries");
