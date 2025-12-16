@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -120,12 +120,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create Supabase clients
-    // Use regular client for AES key validation
-    const supabase = await createClient();
-
-    // Use admin client for querying inquiries/replies (bypass RLS after auth verification)
-    const adminSupabase = createAdminClient();
+    // Use admin client to bypass RLS for anonymous access
+    const supabase = createAdminClient();
 
     // Get and consume one-time key for request
     const { data: keyData, error: keyError } = await supabase
@@ -172,8 +168,8 @@ export async function POST(req: NextRequest) {
       await decryptAES(authCode.encrypted, keyData.key, authCode.iv)
     ).toUpperCase();
 
-    // Query inquiry with replies using admin client to bypass RLS
-    const { data, error } = await adminSupabase
+    // Query inquiry with replies
+    const { data, error } = await supabase
       .from('inquiries')
       .select(`
         id,

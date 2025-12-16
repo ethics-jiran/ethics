@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 const corsHeaders = {
@@ -12,7 +12,8 @@ export async function OPTIONS() {
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS for public FAQ access
+    const supabase = createAdminClient();
 
     const { data, error } = await supabase
       .from('faqs')

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +13,8 @@ export async function OPTIONS() {
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS for public policy access
+    const supabase = createAdminClient();
 
     // Get the latest policy (sorted by updated_at)
     const { data, error } = await supabase

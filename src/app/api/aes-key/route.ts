@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,8 +12,8 @@ export async function OPTIONS() {
 
 export async function GET(req: NextRequest) {
   try {
-    // Create Supabase client with service role
-    const supabase = await createClient();
+    // Use admin client to bypass RLS for anonymous key generation
+    const supabase = createAdminClient();
 
     // Generate random key ID and AES key
     const keyId = crypto.randomUUID().replace(/-/g, '');
