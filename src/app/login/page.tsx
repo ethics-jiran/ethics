@@ -106,44 +106,48 @@ function LoginForm() {
     e.preventDefault();
     setError("");
 
-    try {
+    // MFA verify with automatic retry on IP mismatch
+    const verifyWithRetry = async (currentChallengeId: string, retryCount = 0): Promise<boolean> => {
       const { error } = await supabase.auth.mfa.verify({
         factorId,
-        challengeId,
+        challengeId: currentChallengeId,
         code: totpCode,
       });
 
-      if (error) {
-        // IP mismatch 에러인 경우 새 challenge 생성 후 재시도
-        if (error.message?.includes('IP') || error.code === 'mfa_ip_address_mismatch') {
-          const { data: newChallenge } = await supabase.auth.mfa.challenge({
-            factorId,
-          });
+      if (!error) return true;
 
-          if (newChallenge) {
-            setChallengeId(newChallenge.id);
-            // 같은 코드로 재시도
-            const { error: retryError } = await supabase.auth.mfa.verify({
-              factorId,
-              challengeId: newChallenge.id,
-              code: totpCode,
-            });
+      // IP mismatch 에러인 경우 새 challenge 생성 후 재시도 (최대 2회)
+      const isIpMismatch = error.message?.includes('IP') ||
+                          error.message?.includes('mismatch') ||
+                          error.code === 'mfa_ip_address_mismatch';
 
-            if (retryError) throw retryError;
+      if (isIpMismatch && retryCount < 2) {
+        const { data: newChallenge } = await supabase.auth.mfa.challenge({
+          factorId,
+        });
 
-            // 재시도 성공
-            router.push("/admin/inquiries");
-            router.refresh();
-            return;
-          }
+        if (newChallenge) {
+          setChallengeId(newChallenge.id);
+          return verifyWithRetry(newChallenge.id, retryCount + 1);
         }
-        throw error;
       }
 
-      // Redirect to admin panel
-      router.push("/admin/inquiries");
-      router.refresh();
+      // IP mismatch가 아니거나 재시도 실패
+      throw error;
+    };
+
+    try {
+      const success = await verifyWithRetry(challengeId);
+
+      if (success) {
+        router.push("/admin/inquiries");
+        router.refresh();
+      }
     } catch (err: any) {
+      // IP mismatch 관련 에러는 표시하지 않음
+      if (err.message?.includes('IP') || err.message?.includes('mismatch')) {
+        return;
+      }
       setError(err.message || "Invalid code");
     }
   };
